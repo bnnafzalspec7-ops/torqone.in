@@ -71,11 +71,11 @@ body::before {
 .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; }
 
 /* Mobile bottom nav */
-.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: rgba(16,16,16,0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); height: var(--bottom-nav-h); align-items: stretch; }
-.bottom-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; font-size: 10px; font-weight: 500; color: var(--text-muted); transition: var(--transition); padding: 6px 2px; border: none; background: none; }
+.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 999; background: rgba(16,16,16,0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 20px)); padding-bottom: env(safe-area-inset-bottom, 20px); align-items: stretch; justify-content: center; }
+.bottom-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; font-size: 10px; font-weight: 500; color: var(--text-muted); transition: var(--transition); padding: 6px 2px; border: none; background: transparent; height: 100%; -webkit-appearance: none; }
 .bottom-nav-item.active { color: var(--red); }
-.bottom-nav-fab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; font-size: 10px; color: var(--text-muted); font-weight: 500; }
-.bottom-nav-fab .fab-circle { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--red-light), var(--red-dark)); display: flex; align-items: center; justify-content: center; margin-bottom: 2px; box-shadow: 0 0 0 4px rgba(232,25,44,0.15), var(--shadow-red); margin-top: -20px; transition: var(--transition); }
+.bottom-nav-fab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; font-size: 10px; color: var(--text-muted); font-weight: 500; height: 100%; position: relative; z-index: 10; -webkit-appearance: none; border: none; background: transparent; }
+.bottom-nav-fab .fab-circle { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--red-light), var(--red-dark)); display: flex; align-items: center; justify-content: center; margin-bottom: 2px; box-shadow: 0 0 0 4px rgba(232,25,44,0.15), var(--shadow-red); margin-top: -24px; transition: var(--transition); }
 .bottom-nav-fab:active .fab-circle { transform: scale(0.92); }
 
 /* SIDEBAR */
@@ -1587,10 +1587,10 @@ function App() {
             <span>{n.label.split(' ')[0]}</span>
           </button>
         ))}
-        <div className="bottom-nav-fab" onClick={()=>{setSelected(null);setModal('new')}}>
+        <button className="bottom-nav-fab" onClick={()=>{setSelected(null);setModal('new')}}>
           <div className="fab-circle"><Icon name="plus" size={22} color="#fff" /></div>
           <span style={{fontSize:10,color:'var(--text-muted)'}}>New</span>
-        </div>
+        </button>
       </div>
 
       {/* Modals */}
