@@ -9,418 +9,413 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  :root {
-    --red: #E8192C;
-    --red-dark: #b5111f;
-    --red-glow: rgba(232,25,44,0.18);
-    --black: #0a0a0a;
-    --surface: #111111;
-    --surface2: #1a1a1a;
-    --surface3: #222222;
-    --border: #2a2a2a;
-    --border-bright: #333;
-    --text: #f0f0f0;
-    --text-muted: #888;
-    --text-dim: #555;
-    --green: #22c55e;
-    --orange: #f97316;
-    --font-display: 'Rajdhani', sans-serif;
-    --font-body: 'DM Sans', sans-serif;
-    --bottom-nav-h: 64px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body {
-    background: var(--black);
-    color: var(--text);
-    font-family: var(--font-body);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--surface); }
-  ::-webkit-scrollbar-thumb { background: var(--red-dark); border-radius: 3px; }
+:root {
+  --red: #E8192C;
+  --red-dark: #b5111f;
+  --red-light: #ff2d42;
+  --red-glow: rgba(232,25,44,0.15);
+  --red-glow-strong: rgba(232,25,44,0.3);
+  --black: #080808;
+  --surface: #101010;
+  --surface2: #161616;
+  --surface3: #1e1e1e;
+  --surface4: #242424;
+  --border: rgba(255,255,255,0.06);
+  --border-hover: rgba(255,255,255,0.12);
+  --border-active: rgba(232,25,44,0.4);
+  --text: #f2f2f2;
+  --text-muted: #6b6b6b;
+  --text-secondary: #a0a0a0;
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.1);
+  --orange: #f97316;
+  --orange-dim: rgba(249,115,22,0.1);
+  --blue: #3b82f6;
+  --font-display: 'Rajdhani', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --bottom-nav-h: 68px;
+  --sidebar-w: 240px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.6);
+  --shadow-red: 0 4px 24px rgba(232,25,44,0.25);
+  --transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+body { background: var(--black); background-image: linear-gradient(to bottom, rgba(8,8,8,0.85), rgba(8,8,8,0.97)), url('https://images.unsplash.com/photo-1599839619722-39751411ea63?q=80&w=1920&auto=format&fit=crop'); background-size: cover; background-position: center; background-attachment: fixed; color: var(--text); font-family: var(--font-body); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(232,25,44,0.4); border-radius: 10px; }
 
-  /* ── LAYOUT ─────────────────────────────── */
-  .app { display: flex; min-height: 100vh; }
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.8;
+}
 
-  /* Desktop sidebar */
-  .sidebar {
-    width: 220px; min-height: 100vh; background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    position: fixed; top: 0; left: 0; z-index: 100;
-  }
-  .main { margin-left: 220px; flex: 1; min-height: 100vh; }
+/* SVG ICONS */
+.icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.icon svg { display: block; }
 
-  /* Mobile bottom nav (hidden on desktop) */
-  .bottom-nav {
-    display: none;
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    height: var(--bottom-nav-h);
-    align-items: stretch;
-  }
-  .bottom-nav-item {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 3px;
-    cursor: pointer; font-size: 10px; color: var(--text-muted);
-    transition: color 0.15s; padding: 6px 2px;
-    border: none; background: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .bottom-nav-item .bn-icon { font-size: 20px; line-height: 1; }
-  .bottom-nav-item.active { color: var(--red); }
-  .bottom-nav-fab {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 3px;
-    cursor: pointer; font-size: 10px; color: var(--text-muted);
-    -webkit-tap-highlight-color: transparent;
-  }
-  .bottom-nav-fab .fab-circle {
-    width: 46px; height: 46px; border-radius: 50%;
-    background: var(--red); display: flex; align-items: center; justify-content: center;
-    font-size: 22px; margin-bottom: 2px;
-    box-shadow: 0 2px 12px rgba(232,25,44,0.5);
-    margin-top: -18px;
-  }
+/* LAYOUT */
+.app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+.sidebar { width: var(--sidebar-w); min-height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 100; }
+.main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; }
 
-  /* ── SIDEBAR ────────────────────────────── */
-  .logo-area { padding: 22px 18px 18px; border-bottom: 1px solid var(--border); }
-  .logo-text { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: 1px; color: #fff; }
-  .logo-text span { color: var(--red); }
-  .logo-sub { font-size: 10px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
-  .nav { padding: 14px 10px; flex: 1; }
-  .nav-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px; border-radius: 8px;
-    cursor: pointer; margin-bottom: 4px;
-    font-size: 13.5px; font-weight: 500; color: var(--text-muted);
-    transition: all 0.18s; border: 1px solid transparent; user-select: none;
-  }
-  .nav-item:hover { background: var(--surface2); color: var(--text); }
-  .nav-item.active { background: var(--red-glow); border-color: rgba(232,25,44,0.35); color: #fff; }
-  .nav-item.active .nav-icon { color: var(--red); }
-  .nav-icon { font-size: 16px; width: 18px; text-align: center; }
-  .sidebar-footer { padding: 14px 18px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-dim); }
+/* Mobile bottom nav */
+.bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: rgba(16,16,16,0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); height: var(--bottom-nav-h); align-items: stretch; }
+.bottom-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; font-size: 10px; font-weight: 500; color: var(--text-muted); transition: var(--transition); padding: 6px 2px; border: none; background: none; }
+.bottom-nav-item.active { color: var(--red); }
+.bottom-nav-fab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; font-size: 10px; color: var(--text-muted); font-weight: 500; }
+.bottom-nav-fab .fab-circle { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--red-light), var(--red-dark)); display: flex; align-items: center; justify-content: center; margin-bottom: 2px; box-shadow: 0 0 0 4px rgba(232,25,44,0.15), var(--shadow-red); margin-top: -20px; transition: var(--transition); }
+.bottom-nav-fab:active .fab-circle { transform: scale(0.92); }
 
-  /* ── TOPBAR ─────────────────────────────── */
-  .topbar {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 12px 20px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 50;
-  }
-  .page-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
-  .topbar-right { display: flex; gap: 8px; align-items: center; }
+/* SIDEBAR */
+.logo-area { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); position: relative; }
+.logo-area::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--red-glow-strong), transparent); }
+.logo-wordmark { font-family: var(--font-display); font-size: 24px; font-weight: 700; letter-spacing: 1px; line-height: 1; display: flex; align-items: center; }
+.logo-wordmark .r { color: var(--red); }
+.logo-wordmark .w { color: #fff; }
+.logo-dot { width: 5px; height: 5px; background: var(--red); border-radius: 50%; margin: 0 2px; display: inline-block; vertical-align: middle; animation: pulse-dot 2.5s ease-in-out infinite; }
+@keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.7); } }
+.logo-sub { font-size: 9.5px; font-weight: 600; color: var(--text-muted); letter-spacing: 2.5px; text-transform: uppercase; margin-top: 6px; }
+.nav { padding: 16px 12px; flex: 1; }
+.nav-section-label { font-size: 9px; font-weight: 700; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin: 12px 0 6px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; margin-bottom: 2px; font-size: 13.5px; font-weight: 500; color: var(--text-secondary); transition: var(--transition); user-select: none; position: relative; letter-spacing: 0.1px; }
+.nav-item:hover { background: var(--surface3); color: var(--text); }
+.nav-item.active { background: var(--red-glow); color: #fff; }
+.nav-item.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: var(--red); border-radius: 0 3px 3px 0; }
+.nav-item .icon { opacity: 0.7; }
+.nav-item.active .icon, .nav-item:hover .icon { opacity: 1; }
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+.sidebar-user { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.sidebar-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--red), var(--red-dark)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.sidebar-user-info { flex: 1; min-width: 0; }
+.sidebar-user-name { font-size: 12.5px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-user-role { font-size: 10px; color: var(--text-muted); font-weight: 500; margin-top: 1px; }
+.sidebar-conn-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; animation: pulse-green 2s ease-in-out infinite; }
+@keyframes pulse-green { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 4px rgba(34,197,94,0); } }
+.sidebar-disconnect { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: var(--transition); padding: 7px 8px; border-radius: var(--radius-sm); margin-top: 2px; }
+.sidebar-disconnect:hover { color: var(--red); background: rgba(232,25,44,0.06); }
 
-  /* ── CONTENT ────────────────────────────── */
-  .content { padding: 20px; }
+/* TOPBAR */
+.topbar { background: rgba(16,16,16,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 50; }
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+.topbar-page-indicator { display: flex; align-items: center; gap: 10px; }
+.topbar-page-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--red-glow); border: 1px solid var(--border-active); display: flex; align-items: center; justify-content: center; color: var(--red); }
+.page-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: 0.3px; }
+.topbar-right { display: flex; gap: 8px; align-items: center; }
 
-  /* ── STAT CARDS ─────────────────────────── */
-  .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
-  .stat-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px;
-    position: relative; overflow: hidden; transition: border-color 0.2s;
-  }
-  .stat-card:hover { border-color: var(--border-bright); }
-  .stat-card.accent { border-color: rgba(232,25,44,0.4); }
-  .stat-card.accent::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--red); }
-  .stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
-  .stat-value { font-family: var(--font-display); font-size: 26px; font-weight: 700; line-height: 1; }
-  .stat-value.green { color: var(--green); }
-  .stat-value.red { color: var(--red); }
-  .stat-value.orange { color: var(--orange); }
-  .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+/* CONTENT */
+.content { padding: 24px; }
 
-  /* ── TABLE CARD ─────────────────────────── */
-  .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-  .table-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .table-title { font-family: var(--font-display); font-size: 16px; font-weight: 600; }
-  table { width: 100%; border-collapse: collapse; }
-  th { text-align: left; padding: 10px 14px; font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; background: var(--surface2); border-bottom: 1px solid var(--border); }
-  td { padding: 11px 14px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text); }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--surface2); }
+/* STAT CARDS */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; position: relative; overflow: hidden; transition: var(--transition); }
+.stat-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.015) 0%, transparent 60%); pointer-events: none; }
+.stat-card:hover { border-color: var(--border-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.stat-card.accent { border-color: rgba(232,25,44,0.3); background: linear-gradient(135deg, rgba(232,25,44,0.06), var(--surface)); }
+.stat-card.accent::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--red), transparent); }
+.stat-card-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+.stat-card-icon.red-icon { background: var(--red-glow); border: 1px solid rgba(232,25,44,0.2); color: var(--red); }
+.stat-card-icon.green-icon { background: var(--green-dim); border: 1px solid rgba(34,197,94,0.2); color: var(--green); }
+.stat-card-icon.orange-icon { background: var(--orange-dim); border: 1px solid rgba(249,115,22,0.2); color: var(--orange); }
+.stat-card-icon.blue-icon { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); color: var(--blue); }
+.stat-label { font-size: 10.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
+.stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: -0.5px; }
+.stat-value.green { color: var(--green); }
+.stat-value.red { color: var(--red); }
+.stat-value.orange { color: var(--orange); }
+.stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 8px; font-weight: 400; }
 
-  /* Mobile sales card (replaces table rows on mobile) */
-  .sale-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
-  }
-  .sale-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-  .sale-card-invoice { font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--red); }
-  .sale-card-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .sale-card-amount { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
-  .sale-card-profit { font-size: 12px; text-align: right; margin-top: 2px; }
-  .sale-card-mid { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
-  .sale-card-customer { font-weight: 600; font-size: 14px; }
-  .sale-card-vehicle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
-  .sale-card-actions { display: flex; gap: 8px; }
-  .sale-card-actions .btn { flex: 1; justify-content: center; font-size: 13px; }
+/* TABLE CARD */
+.table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.table-title { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: 0.3px; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 11px 16px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.2px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+td { padding: 13px 16px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
 
-  /* ── BADGES ─────────────────────────────── */
-  .badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge-ig { background: rgba(225,48,108,0.15); color: #e1306c; }
-  .badge-fb { background: rgba(66,103,178,0.15); color: #4267b2; }
-  .badge-wa { background: rgba(37,211,102,0.15); color: #25d366; }
-  .badge-ref { background: rgba(255,255,255,0.08); color: #aaa; }
+/* Mobile sale cards */
+.sale-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 10px; transition: var(--transition); }
+.sale-card:active { background: var(--surface2); }
+.sale-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.sale-card-invoice { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--red); }
+.sale-card-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.sale-card-amount { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+.sale-card-profit { font-size: 11.5px; text-align: right; margin-top: 3px; font-weight: 600; }
+.sale-card-mid { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.sale-card-customer { font-weight: 600; font-size: 14px; }
+.sale-card-vehicle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.sale-card-actions { display: flex; gap: 8px; }
 
-  /* ── BUTTONS ────────────────────────────── */
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 9px 16px; border-radius: 8px;
-    font-family: var(--font-body); font-size: 13px; font-weight: 500;
-    cursor: pointer; border: none; transition: all 0.18s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .btn-red { background: var(--red); color: #fff; }
-  .btn-red:active { background: var(--red-dark); }
-  .btn-green { background: #25d366; color: #fff; }
-  .btn-green:active { background: #1da851; }
-  .btn-outline { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
-  .btn-outline:active { border-color: var(--border-bright); color: var(--text); }
-  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-ghost:active { background: var(--surface3); }
-  .btn-sm { padding: 6px 11px; font-size: 12px; }
-  .btn-icon { padding: 8px; }
+/* BADGES */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.2px; }
+.badge-ig { background: rgba(225,48,108,0.12); color: #e1306c; border: 1px solid rgba(225,48,108,0.2); }
+.badge-fb { background: rgba(66,103,178,0.12); color: #6d8de0; border: 1px solid rgba(66,103,178,0.2); }
+.badge-wa { background: rgba(37,211,102,0.12); color: #25d366; border: 1px solid rgba(37,211,102,0.2); }
+.badge-ref { background: rgba(255,255,255,0.06); color: #888; border: 1px solid var(--border); }
 
-  /* ── INPUTS ─────────────────────────────── */
-  .input-group { margin-bottom: 16px; }
-  .input-label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; }
-  input, select, textarea {
-    width: 100%; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 8px;
-    color: var(--text); font-family: var(--font-body); font-size: 14px;
-    padding: 11px 13px; outline: none; transition: border-color 0.18s;
-    -webkit-appearance: none; appearance: none;
-  }
-  input:focus, select:focus, textarea:focus { border-color: var(--red); }
-  input::placeholder { color: var(--text-dim); }
-  select option { background: var(--surface2); }
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: var(--transition); letter-spacing: 0.1px; position: relative; overflow: hidden; }
+.btn::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0); transition: background 0.15s; }
+.btn:hover::after { background: rgba(255,255,255,0.05); }
+.btn:active { transform: scale(0.97); }
+.btn-red { background: linear-gradient(135deg, var(--red-light), var(--red)); color: #fff; box-shadow: 0 2px 12px rgba(232,25,44,0.3); }
+.btn-red:hover { box-shadow: var(--shadow-red); }
+.btn-green { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; box-shadow: 0 2px 12px rgba(34,197,94,0.2); }
+.btn-outline { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-outline:hover { border-color: var(--border-hover); color: var(--text); }
+.btn-ghost { background: var(--surface2); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--surface3); color: var(--text); border-color: var(--border-hover); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-icon { padding: 8px; }
 
-  /* ── MODAL ──────────────────────────────── */
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 999;
-    background: rgba(0,0,0,0.8);
-    display: flex; align-items: flex-end; justify-content: center;
-  }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border-bright);
-    border-radius: 18px 18px 0 0;
-    width: 100%; max-width: 100%;
-    max-height: 92vh; overflow-y: auto;
-  }
-  .modal-head {
-    padding: 16px 18px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; background: var(--surface); z-index: 2;
-  }
-  .modal-handle { width: 36px; height: 4px; background: var(--border-bright); border-radius: 2px; margin: 10px auto 0; }
-  .modal-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
-  .modal-body { padding: 18px; }
-  .modal-foot { padding: 14px 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
-  .close-btn { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
-  .close-btn:active { background: var(--surface2); }
+/* INPUTS */
+.input-group { margin-bottom: 16px; }
+.input-label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 7px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+input, select, textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: var(--font-body); font-size: 13.5px; padding: 11px 13px; outline: none; transition: var(--transition); -webkit-appearance: none; appearance: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--red); background: rgba(232,25,44,0.03); box-shadow: 0 0 0 3px rgba(232,25,44,0.08); }
+input::placeholder { color: var(--text-muted); }
+select option { background: var(--surface2); }
 
-  /* ── FORM GRID ──────────────────────────── */
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .form-full { grid-column: 1 / -1; }
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; z-index: 999; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: flex; align-items: flex-end; justify-content: center; animation: overlayIn 0.2s ease; }
+@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+.modal { background: var(--surface); border: 1px solid var(--border-hover); border-radius: var(--radius-xl) var(--radius-xl) 0 0; width: 100%; max-width: 100%; max-height: 93vh; overflow-y: auto; animation: sheetUp 0.3s cubic-bezier(0.4,0,0.2,1); }
+@keyframes sheetUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-handle { width: 40px; height: 4px; background: var(--surface4); border-radius: 4px; margin: 12px auto 0; }
+.modal-head { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--surface); z-index: 2; }
+.modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; letter-spacing: 0.3px; display: flex; align-items: center; gap: 10px; }
+.modal-body { padding: 20px; }
+.modal-foot { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+.close-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; padding: 7px; border-radius: 8px; transition: var(--transition); display: flex; align-items: center; justify-content: center; }
+.close-btn:hover { background: var(--surface3); color: var(--text); }
 
-  /* ── ITEMS TABLE IN FORM ────────────────── */
-  .items-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-  .items-table th { background: var(--surface3); padding: 7px 8px; font-size: 10.5px; }
-  .items-table td { padding: 5px 3px; }
-  .items-table input, .items-table select { padding: 8px 8px; font-size: 13px; }
-  .add-item-row { margin-top: 10px; }
+/* FORM */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-full { grid-column: 1 / -1; }
+.form-section { border-top: 1px solid var(--border); padding-top: 18px; margin-bottom: 18px; }
+.form-section-label { font-size: 10px; color: var(--red); letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.form-section-label::after { content: ''; flex: 1; height: 1px; background: var(--red-glow); }
 
-  /* ── SEARCH ─────────────────────────────── */
-  .search-bar { position: relative; }
-  .search-bar input { padding-left: 36px; }
-  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 14px; }
+/* ITEMS TABLE */
+.items-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.items-table th { background: var(--surface3); padding: 8px; font-size: 10px; }
+.items-table td { padding: 5px 3px; border-bottom: none; }
+.items-table input, .items-table select { padding: 8px 9px; font-size: 13px; }
 
-  /* ── BILL PREVIEW ───────────────────────── */
-  .bill-preview { background: #fff; color: #111; border-radius: 8px; padding: 0; font-family: Arial, sans-serif; font-size: 13px; }
-  .bill-header-bar { background: #0a0a0a; color: #fff; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-  .bill-logo-text { font-size: 24px; font-weight: 900; letter-spacing: 1px; font-family: 'Rajdhani', sans-serif; }
-  .bill-logo-text span { color: var(--red); }
-  .bill-tag { font-size: 9px; letter-spacing: 2px; color: #aaa; margin-top: 2px; }
-  .bill-info { font-size: 10px; color: #ccc; text-align: right; }
-  .bill-body { padding: 16px 18px; }
-  .bill-meta { display: flex; gap: 20px; margin-bottom: 14px; flex-wrap: wrap; }
-  .bill-meta-block { flex: 1; min-width: 130px; }
-  .bill-meta-label { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
-  .bill-meta-val { font-size: 12px; font-weight: 600; color: #111; }
-  .bill-meta-val.small { font-size: 11px; font-weight: 400; }
-  .bill-table { width: 100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #ddd; }
-  .bill-table th { background: #0a0a0a; color: #fff; padding: 8px 8px; text-align: left; font-size: 10px; border-right: 1px solid #333; white-space: nowrap; }
-  .bill-table th:last-child { border-right: none; }
-  .bill-table td { padding: 8px 8px; border-bottom: 1px solid #eee; border-right: 1px solid #eee; font-size: 12px; vertical-align: middle; word-break: break-word; }
-  .bill-table td:last-child { border-right: none; }
-  .bill-table tr:last-child td { border-bottom: none; }
-  .bill-table .col-no { width: 28px; text-align: center; }
-  .bill-table .col-desc { }
-  .bill-table .col-qty { width: 60px; text-align: center; white-space: nowrap; }
-  .bill-table .col-rate { width: 80px; text-align: right; white-space: nowrap; }
-  .bill-table .col-amt { width: 90px; text-align: right; white-space: nowrap; font-weight: 600; }
-  .bill-totals { margin-top: 10px; }
-  .bill-total-row { display: flex; justify-content: flex-end; }
-  .bill-total-table { width: 220px; border: 1px solid #ddd; border-collapse: collapse; }
-  .bill-total-table td { padding: 6px 9px; font-size: 12px; border-bottom: 1px solid #eee; }
-  .bill-total-table td:last-child { text-align: right; font-weight: 600; }
-  .bill-grand { font-weight: 700; font-size: 13px; background: #0a0a0a; color: #fff; }
-  .bill-grand td { padding: 8px 9px; border-bottom: none; }
-  .bill-grand td:last-child { text-align: right; }
-  .bill-footer { background: var(--red); color: #fff; padding: 9px 18px; font-size: 10px; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; }
-  .bill-decl { padding: 9px 18px; font-size: 10px; color: #555; border-top: 1px solid #eee; }
-  .bill-sig { text-align: right; padding: 12px 18px; font-size: 11px; color: #555; }
+/* SEARCH */
+.search-bar { position: relative; }
+.search-bar input { padding-left: 40px; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; display: flex; }
 
-  /* ── WHATSAPP BAR ───────────────────────── */
-  .wa-bar { padding: 12px 18px; background: #0d1f17; border-bottom: 1px solid #1a3326; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .wa-bar-label { font-size: 12px; color: #4ade80; font-weight: 600; white-space: nowrap; }
-  .wa-btn-customer { background: #25d366; color: #fff; font-weight: 700; border: none; flex: 1; min-width: 160px; justify-content: center; font-size: 14px; padding: 10px 14px; border-radius: 10px; }
-  .wa-btn-dealer { background: #128c7e; color: #fff; font-weight: 600; border: none; flex: 1; min-width: 160px; justify-content: center; font-size: 13px; padding: 10px 14px; border-radius: 10px; }
+/* BILL PREVIEW */
+.bill-preview { background: #fff; color: #111; border-radius: var(--radius-sm); font-family: 'Inter', sans-serif; font-size: 13px; overflow: hidden; box-shadow: 0 0 0 1px #e5e5e5; }
+.bill-header-bar { background: #111; color: #fff; padding: 24px 28px; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 15px; border-bottom: 4px solid var(--red); }
+.bill-logo-text { font-size: 32px; font-weight: 900; letter-spacing: 1.5px; font-family: 'Rajdhani', sans-serif; line-height: 1; }
+.bill-logo-text span { color: var(--red); }
+.bill-tag { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.6); margin-top: 4px; font-weight: 700; text-transform: uppercase; }
+.bill-info { font-size: 11px; color: #ccc; text-align: right; line-height: 1.6; }
+.bill-info-title { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 2px; margin-bottom: 6px; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
+.bill-body { padding: 30px; }
+.bill-meta { display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap; background: #fafafa; padding: 20px 24px; border-radius: 8px; border: 1px solid #eee; }
+.bill-meta-block { flex: 1; min-width: 140px; }
+.bill-meta-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; font-weight: 700; }
+.bill-meta-val { font-size: 13px; font-weight: 700; color: #111; line-height: 1.5; }
+.bill-meta-val.small { font-size: 12px; font-weight: 500; color: #555; margin-top: 2px; }
+.bill-table { width: 100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #e5e5e5; }
+.bill-table th { background: #f4f4f4; color: #333; padding: 12px 14px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #ddd; }
+.bill-table th:last-child { border-right: none; }
+.bill-table td { padding: 12px 14px; border-bottom: 1px solid #f0f0f0; font-size: 13px; vertical-align: middle; color: #111; }
+.bill-table td:last-child { border-right: none; }
+.bill-table tr:last-child td { border-bottom: none; }
+.bill-table .col-no { width: 30px; text-align: center; font-weight: 600; color: #888; }
+.bill-table .col-qty { width: 60px; text-align: center; }
+.bill-table .col-rate { width: 90px; text-align: right; }
+.bill-table .col-amt { width: 100px; text-align: right; font-weight: 700; }
+.bill-totals { margin-top: 16px; }
+.bill-total-row { display: flex; justify-content: flex-end; }
+.bill-total-table { width: 260px; border-collapse: collapse; }
+.bill-total-table td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f0f0f0; color: #111; }
+.bill-total-table td:last-child { text-align: right; font-weight: 700; }
+.bill-grand { background: #111; color: #fff; }
+.bill-grand td { padding: 14px; border-bottom: none; font-weight: 800; font-size: 14px; color: #fff !important; }
+.bill-grand td:last-child { text-align: right; }
+.bill-footer { background: var(--red); color: #fff; padding: 12px 24px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px; }
+.bill-decl { padding: 14px 24px; font-size: 11px; color: #666; border-top: 1px solid #f0f0f0; background: #fafafa; }
+.bill-sig { text-align: right; padding: 20px 24px; font-size: 12px; color: #666; border-top: 1px solid #f0f0f0; }
 
-  /* ── EMPTY STATE ────────────────────────── */
-  .empty-state { text-align: center; padding: 50px 20px; color: var(--text-dim); }
-  .empty-icon { font-size: 38px; margin-bottom: 10px; }
-  .empty-text { font-size: 14px; }
+/* WHATSAPP BAR */
+.wa-bar { padding: 14px 20px; background: rgba(37,211,102,0.05); border-bottom: 1px solid rgba(37,211,102,0.1); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.wa-bar-label { font-size: 12px; color: #4ade80; font-weight: 700; white-space: nowrap; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+.wa-btn-customer { background: linear-gradient(135deg, #25d366, #128c7e); color: #fff; font-weight: 700; border: none; flex: 1; min-width: 160px; justify-content: center; font-size: 13.5px; padding: 11px 16px; border-radius: 10px; box-shadow: 0 2px 12px rgba(37,211,102,0.2); }
+.wa-btn-dealer { background: rgba(18,140,126,0.2); color: #25d366; font-weight: 600; border: 1px solid rgba(37,211,102,0.2); flex: 1; min-width: 160px; justify-content: center; font-size: 13px; padding: 11px 16px; border-radius: 10px; }
 
-  /* ── SETUP ──────────────────────────────── */
-  .setup-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
-  .setup-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px; width: 100%; max-width: 460px; text-align: center; }
-  .setup-logo { font-family: var(--font-display); font-size: 34px; font-weight: 700; margin-bottom: 6px; }
-  .setup-logo span { color: var(--red); }
+/* EMPTY STATE */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty-icon { display: flex; justify-content: center; margin-bottom: 16px; opacity: 0.4; }
+.empty-text { font-size: 14px; font-weight: 500; }
+.empty-sub { font-size: 12px; margin-top: 4px; opacity: 0.6; }
 
-  /* ── P&L ────────────────────────────────── */
-  .pl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
-  .pl-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; overflow-x: auto; }
+/* P&L */
+.pl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+.pl-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; overflow-x: auto; }
 
-  /* ── TABS ───────────────────────────────── */
-  .tabs { display: flex; gap: 4px; background: var(--surface2); padding: 4px; border-radius: 10px; width: fit-content; margin-bottom: 18px; }
-  .tab { padding: 7px 14px; border-radius: 7px; font-size: 13px; cursor: pointer; color: var(--text-muted); transition: all 0.18s; }
-  .tab.active { background: var(--surface3); color: var(--text); }
+/* TABS */
+.tabs { display: flex; gap: 2px; background: var(--surface2); padding: 4px; border-radius: 10px; width: fit-content; margin-bottom: 20px; border: 1px solid var(--border); }
+.tab { padding: 7px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; color: var(--text-muted); transition: var(--transition); letter-spacing: 0.2px; }
+.tab.active { background: var(--surface4); color: var(--text); }
 
-  /* ── CUSTOMER HISTORY ───────────────────── */
-  .customer-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
-  .customer-card-head { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-  .customer-card-head:active { background: var(--surface2); }
-  .customer-name { font-weight: 600; font-size: 15px; }
-  .customer-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .customer-body { border-top: 1px solid var(--border); padding: 12px 16px; display: none; overflow-x: auto; }
-  .customer-body.open { display: block; }
+/* CUSTOMER CARDS */
+.customer-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 10px; overflow: hidden; transition: var(--transition); }
+.customer-card:hover { border-color: var(--border-hover); }
+.customer-card-head { padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.customer-card-head:active { background: var(--surface2); }
+.customer-name { font-weight: 600; font-size: 15px; }
+.customer-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.customer-body { border-top: 1px solid var(--border); padding: 14px 18px; display: none; overflow-x: auto; }
+.customer-body.open { display: block; }
 
-  /* ── LOADING / TOAST ────────────────────── */
-  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--red); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .toast { position: fixed; bottom: 80px; right: 16px; z-index: 9999; background: var(--surface2); border: 1px solid var(--border-bright); border-radius: 10px; padding: 12px 16px; font-size: 13px; display: flex; align-items: center; gap: 10px; animation: toastIn 0.3s ease; max-width: 300px; }
-  .toast.success { border-color: rgba(34,197,94,0.5); }
-  .toast.error { border-color: rgba(232,25,44,0.5); }
-  @keyframes toastIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+/* LOADING / TOAST */
+.spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--red); border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.toast { position: fixed; bottom: 24px; right: 20px; z-index: 9999; background: var(--surface2); border: 1px solid var(--border-hover); border-radius: var(--radius-md); padding: 13px 18px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px; animation: toastIn 0.35s cubic-bezier(0.4,0,0.2,1); max-width: 320px; box-shadow: var(--shadow-lg); }
+.toast.success { border-color: rgba(34,197,94,0.3); color: var(--green); }
+.toast.error { border-color: rgba(232,25,44,0.3); color: #ff6b78; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-  /* ── MISC ───────────────────────────────── */
-  .text-muted { color: var(--text-muted); }
-  .text-red { color: var(--red); }
-  .text-green { color: var(--green); }
-  .text-orange { color: var(--orange); }
-  .fw-600 { font-weight: 600; }
-  .fs-12 { font-size: 12px; }
-  .mt-4 { margin-top: 4px; }
+/* MISC */
+.text-muted { color: var(--text-muted); }
+.text-secondary { color: var(--text-secondary); }
+.text-red { color: var(--red); }
+.text-green { color: var(--green); }
+.text-orange { color: var(--orange); }
+.fw-600 { font-weight: 600; }
+.fw-700 { font-weight: 700; }
+.fs-11 { font-size: 11px; }
+.fs-12 { font-size: 12px; }
+.mt-4 { margin-top: 4px; }
+.font-display { font-family: var(--font-display); }
 
-  /* ══════════════════════════════════════════
-     MOBILE BREAKPOINT  ≤ 768px
-  ══════════════════════════════════════════ */
-  @media (max-width: 768px) {
-    /* hide desktop sidebar, show bottom nav */
-    .sidebar { display: none !important; }
-    .bottom-nav { display: flex !important; }
-    .main { margin-left: 0; padding-bottom: var(--bottom-nav-h); }
+/* LOGIN SCREEN */
+.login-screen { min-height: 100vh; display: flex; align-items: stretch; position: relative; overflow: hidden; }
+.login-left { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; position: relative; z-index: 2; }
+.login-right { flex: 1; background: linear-gradient(135deg, #0f0606 0%, #1a0808 40%, #0a0404 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.login-right::before { content: ''; position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(232,25,44,0.2) 0%, transparent 70%); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: breathe 4s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; } 50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; } }
+.login-brand { position: relative; z-index: 2; text-align: center; }
+.login-brand-logo { font-family: var(--font-display); font-size: 64px; font-weight: 700; line-height: 1; letter-spacing: 2px; }
+.login-brand-logo .r { color: var(--red); }
+.login-brand-logo .w { color: #fff; }
+.login-brand-sub { font-size: 11px; color: rgba(255,255,255,0.3); letter-spacing: 4px; text-transform: uppercase; margin-top: 12px; }
+.login-brand-tagline { font-size: 14px; color: rgba(255,255,255,0.5); margin-top: 24px; font-weight: 300; line-height: 1.7; }
+.login-brand-stats { display: flex; gap: 24px; margin-top: 40px; justify-content: center; }
+.login-brand-stat { text-align: center; }
+.login-brand-stat-val { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--red); }
+.login-brand-stat-lbl { font-size: 10px; color: rgba(255,255,255,0.3); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px; }
+.login-card { background: var(--surface); border: 1px solid var(--border-hover); border-radius: 24px; padding: 40px 36px; width: 100%; max-width: 400px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; }
+.login-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--red), transparent); }
+.login-card-header { margin-bottom: 32px; }
+.login-card-title { font-family: var(--font-display); font-size: 28px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; }
+.login-card-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+.login-error { background: rgba(232,25,44,0.08); border: 1px solid rgba(232,25,44,0.2); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: #ff4d5e; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.login-btn { width: 100%; justify-content: center; padding: 13px; font-size: 14px; font-weight: 700; letter-spacing: 0.5px; border-radius: var(--radius-sm); margin-top: 4px; }
+.login-footer { text-align: center; margin-top: 28px; font-size: 11px; color: var(--text-muted); }
+.password-field { position: relative; }
+.password-toggle { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; align-items: center; transition: var(--transition); }
+.password-toggle:hover { color: var(--text); }
 
-    /* topbar compact */
-    .topbar { padding: 10px 14px; }
-    .page-title { font-size: 17px; }
-    .topbar-right .btn { padding: 7px 10px; font-size: 12px; }
+/* SETUP SCREEN */
+.setup-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+.setup-card { background: var(--surface); border: 1px solid var(--border-hover); border-radius: var(--radius-xl); padding: 40px 32px; width: 100%; max-width: 480px; position: relative; overflow: hidden; }
+.setup-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--red), transparent); }
+.setup-logo { font-family: var(--font-display); font-size: 38px; font-weight: 700; }
+.setup-logo span { color: var(--red); }
+.code-block { background: var(--black); border-radius: var(--radius-sm); padding: 16px; font-family: 'Courier New', monospace; font-size: 11px; color: #7dd3fc; white-space: pre-wrap; border: 1px solid var(--border); overflow-x: auto; line-height: 1.6; }
 
-    /* content padding */
-    .content { padding: 14px; }
+/* PROFIT BADGE */
+.profit-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+.profit-badge.up { background: var(--green-dim); color: var(--green); }
+.profit-badge.down { background: rgba(232,25,44,0.08); color: var(--red); }
 
-    /* stats 2-col on mobile */
-    .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    .stat-card { padding: 12px; }
-    .stat-value { font-size: 20px; }
-    .stat-label { font-size: 9px; }
+/* INVOICE ACTION BAR */
+.invoice-action-bar { display: flex; gap: 6px; flex-wrap: wrap; }
 
-    /* hide desktop table, show sale cards */
-    .desktop-table { display: none; }
-    .mobile-cards { display: block; }
+/* FADE IN */
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* form grid single col */
-    .form-grid { grid-template-columns: 1fr; }
-    .form-full { grid-column: 1; }
-
-    /* modal full screen bottom sheet */
-    .modal-overlay { align-items: flex-end; padding: 0; }
-    .modal { border-radius: 18px 18px 0 0; max-height: 95vh; border-left: none; border-right: none; border-bottom: none; }
-    .modal-body { padding: 14px; }
-    .modal-foot { padding: 12px 14px; position: sticky; bottom: 0; background: var(--surface); }
-
-    /* items table scroll on mobile */
-    .items-table-wrap { overflow-x: auto; }
-    .items-table { min-width: 560px; }
-
-    /* P&L single col */
-    .pl-grid { grid-template-columns: 1fr; }
-
-    /* bill preview fit mobile */
-    .bill-preview { font-size: 11px; }
-    .bill-header-bar { padding: 12px 14px; }
-    .bill-logo-text { font-size: 20px; }
-    .bill-body { padding: 12px 14px; }
-
-    /* wa bar stack vertically */
-    .wa-bar { flex-direction: column; align-items: stretch; gap: 8px; }
-    .wa-btn-customer, .wa-btn-dealer { min-width: unset; }
-
-    /* toast above bottom nav */
-    .toast { bottom: calc(var(--bottom-nav-h) + 10px); right: 12px; left: 12px; max-width: unset; }
-
-    /* customer body table scroll */
-    .customer-body { padding: 10px 12px; }
-
-    /* tabs scrollable */
-    .tabs { width: 100%; overflow-x: auto; }
-    .tab { white-space: nowrap; }
-  }
-
-  /* hide mobile-cards on desktop */
-  .mobile-cards { display: none; }
+/* ═══════════════════════════════
+   MOBILE ≤ 768px
+═══════════════════════════════ */
+@media (max-width: 768px) {
+  input, select, textarea { font-size: 16px; padding: 12px 14px; }
+  .sidebar { display: none !important; }
+  .bottom-nav { display: flex !important; }
+  .main { margin-left: 0; padding-bottom: var(--bottom-nav-h); background: rgba(8,8,8,0.3); }
+  .topbar { padding: 0 14px; height: 54px; }
+  .page-title { font-size: 16px; }
+  .topbar-right .btn-sm { padding: 6px 10px; font-size: 11px; }
+  .content { padding: 14px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-card { padding: 14px; }
+  .stat-card-icon { width: 32px; height: 32px; margin-bottom: 10px; }
+  .stat-value { font-size: 22px; }
+  .stat-label { font-size: 9px; }
+  .stat-sub { font-size: 10px; }
+  .desktop-table { display: none; }
+  .mobile-cards { display: block; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-full { grid-column: 1; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal { border-radius: var(--radius-xl) var(--radius-xl) 0 0; max-height: 96vh; border-left: none; border-right: none; border-bottom: none; }
+  .modal-body { padding: 16px; }
+  .modal-foot { padding: 12px 16px; position: sticky; bottom: 0; background: var(--surface); z-index: 2; }
+  .items-table-wrap { overflow-x: auto; }
+  .items-table { min-width: 560px; }
+  .pl-grid { grid-template-columns: 1fr; }
+  .bill-preview { font-size: 11.5px; }
+  .bill-header-bar { padding: 14px 16px; }
+  .bill-logo-text { font-size: 22px; }
+  .bill-body { padding: 14px 16px; }
+  .wa-bar { flex-direction: column; align-items: stretch; gap: 8px; padding: 12px 16px; }
+  .wa-btn-customer, .wa-btn-dealer { min-width: unset; }
+  .toast { bottom: calc(var(--bottom-nav-h) + 10px); right: 12px; left: 12px; max-width: unset; }
+  .customer-body { padding: 12px; }
+  .tabs { width: 100%; overflow-x: auto; }
+  .tab { white-space: nowrap; }
+  .login-screen { flex-direction: column; }
+  .login-right { display: none; }
+  .login-left { padding: 32px 24px; align-items: flex-start; flex-direction: column; padding-top: 80px; }
+  .login-card { border-radius: var(--radius-lg); padding: 28px 22px; max-width: 100%; }
+}
+.mobile-cards { display: none; }
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useCallback, useRef } = React;
+const { useState, useEffect, useRef } = React;
 const { jsPDF } = window.jspdf;
 const { createClient } = supabase;
 
-// ─── SUPABASE CONFIG ────────────────────────────────────────────────
-// 🔧 REPLACE these with your actual Supabase project credentials
-const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+// ─── CREDENTIALS ────────────────────────────────────────────
+const ADMIN_USERNAME = 'torqone';
+const ADMIN_PASSWORD = 'Torq@2026';
 
-let supabaseClient = null;
-try {
-  if (SUPABASE_URL !== 'https://YOUR_PROJECT.supabase.co') {
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
-} catch(e) {}
-
-// ─── SQL SETUP SCRIPT (shown to user) ───────────────────────────────
-const SETUP_SQL = `
--- Run this in your Supabase SQL Editor
+// ─── SQL SETUP ───────────────────────────────────────────────
+const SETUP_SQL = `-- Run in your Supabase SQL Editor
 CREATE TABLE IF NOT EXISTS sales (
   id SERIAL PRIMARY KEY,
   invoice_no TEXT NOT NULL,
@@ -440,79 +435,223 @@ CREATE TABLE IF NOT EXISTS sales (
   payment_mode TEXT DEFAULT 'Cash',
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
-);
-`;
+);`;
 
-// ─── HELPERS ─────────────────────────────────────────────────────────
-const fmt = (n) => '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 0 });
-const today = () => new Date().toISOString().split('T')[0];
-const genInvoiceNo = (id) => `TORQ/${String(id || Date.now()).padStart(4,'0')}`;
-const sourceBadge = (s) => {
-  const map = { instagram: 'badge-ig', facebook: 'badge-fb', whatsapp: 'badge-wa', direct: 'badge-ref', referral: 'badge-ref' };
-  return map[s] || 'badge-ref';
+// ─── SVG ICON SYSTEM ────────────────────────────────────────
+// All Lucide icons as inline SVG paths
+const ICONS = {
+  dashboard: `<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>`,
+  sales: `<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8H8"/><path d="M16 12H8"/><path d="M12 16H8"/>`,
+  trending: `<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>`,
+  users: `<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`,
+  plus: `<path d="M5 12h14"/><path d="M12 5v14"/>`,
+  login: `<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/>`,
+  logout: `<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>`,
+  invoice: `<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>`,
+  download: `<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>`,
+  message: `<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>`,
+  edit: `<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>`,
+  trash: `<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>`,
+  x: `<path d="M18 6 6 18"/><path d="m6 6 12 12"/>`,
+  search: `<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>`,
+  refresh: `<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>`,
+  rupee: `<path d="M6 3h12"/><path d="M6 8h12"/><path d="m6 13 8.5 8"/><path d="M6 13h3"/><path d="M9 13c6.667 0 6.667-10 0-10"/>`,
+  calendar: `<rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>`,
+  zap: `<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>`,
+  save: `<path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/>`,
+  eye: `<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>`,
+  eyeOff: `<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/>`,
+  checkCircle: `<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>`,
+  xCircle: `<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>`,
+  alert: `<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>`,
+  link: `<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>`,
+  car: `<path d="M19 17H5c-1.1 0-2-.9-2-2V9a2 2 0 0 1 2-2h11l4 4v4a2 2 0 0 1-2 2z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>`,
+  chevronDown: `<path d="m6 9 6 6 6-6"/>`,
+  chevronUp: `<path d="m18 15-6-6-6 6"/>`,
+  shield: `<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>`,
+  barChart: `<line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/>`,
+  user: `<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`,
+  instagram: `<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>`,
+  facebook: `<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>`,
+  whatsapp: `<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>`,
+  handshake: `<path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l1.71 1.71"/><path d="m2 2 20 20"/><path d="M8.26 14a3 3 0 0 1-3-5.2l.49-.28"/><path d="m6.67 8.67-3.13 3.13a3 3 0 0 0 3 5.2l5.57-3.21"/>`,
+  tag: `<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>`,
+  wrench: `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>`,
 };
-const sourceLabel = (s) => ({ instagram: '📷 Instagram', facebook: '👍 Facebook', whatsapp: '💬 WhatsApp', direct: '🚗 Direct', referral: '🤝 Referral' }[s] || s);
 
-// ─── TOAST ───────────────────────────────────────────────────────────
+function Icon({ name, size = 16, color = 'currentColor', style = {} }) {
+  const d = ICONS[name];
+  if (!d) return null;
+  return (
+    <span className="icon" style={{ width: size, height: size, ...style }}>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g dangerouslySetInnerHTML={{ __html: d }} />
+      </svg>
+    </span>
+  );
+}
+
+// ─── HELPERS ────────────────────────────────────────────────
+const fmt = n => '₹' + Number(n||0).toLocaleString('en-IN', { minimumFractionDigits: 0 });
+const today = () => new Date().toISOString().split('T')[0];
+const genInvoiceNo = () => {
+  const d = new Date();
+  return `TORQ/${d.getFullYear().toString().slice(2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}-${String(Math.floor(Math.random()*9000)+1000)}`;
+};
+const sourceBadge = s => ({ instagram:'badge-ig', facebook:'badge-fb', whatsapp:'badge-wa', direct:'badge-ref', referral:'badge-ref' }[s]||'badge-ref');
+const sourceIcon = s => ({ instagram:'instagram', facebook:'facebook', whatsapp:'whatsapp', direct:'car', referral:'handshake' }[s]||'tag');
+const sourceLabel = s => ({ instagram:'Instagram', facebook:'Facebook', whatsapp:'WhatsApp', direct:'Direct', referral:'Referral' }[s]||s);
+
+// ─── TOAST ──────────────────────────────────────────────────
 function Toast({ msg, type, onClose }) {
-  useEffect(() => { const t = setTimeout(onClose, 3200); return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(onClose, 3400); return () => clearTimeout(t); }, []);
   return (
     <div className={`toast ${type}`}>
-      <span>{type === 'success' ? '✅' : '❌'}</span>
-      <span>{msg}</span>
+      <Icon name={type==='success' ? 'checkCircle' : 'xCircle'} size={18} />
+      <span style={{color:'var(--text)',fontWeight:500}}>{msg}</span>
     </div>
   );
 }
 
-// ─── SETUP SCREEN ────────────────────────────────────────────────────
-function SetupScreen({ onConnect }) {
-  const [url, setUrl] = useState('');
-  const [key, setKey] = useState('');
-  const [showSql, setShowSql] = useState(false);
+// ─── LOGIN SCREEN ────────────────────────────────────────────
+function LoginScreen({ onLogin }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const connect = () => {
-    if (!url || !key) return;
-    localStorage.setItem('torqone_sb_url', url);
-    localStorage.setItem('torqone_sb_key', key);
-    onConnect(url, key);
+  const handleLogin = async (e) => {
+    e && e.preventDefault();
+    if (!username || !password) { setError('Please enter your username and password.'); return; }
+    setLoading(true); setError('');
+    await new Promise(r => setTimeout(r, 700));
+    if (username.trim() === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      sessionStorage.setItem('torqone_auth', '1');
+      onLogin();
+    } else {
+      setError('Invalid credentials. Please try again.');
+    }
+    setLoading(false);
   };
 
   return (
-    <div className="setup-screen">
-      <div className="setup-card">
-        <div className="setup-logo"><span>TORQ</span>ONE.IN</div>
-        <div style={{fontSize:11,color:'var(--text-muted)',letterSpacing:2,textTransform:'uppercase',marginBottom:28}}>Automotive Performance Hub</div>
-        <div style={{width:48,height:3,background:'var(--red)',margin:'0 auto 28px',borderRadius:2}}></div>
-        <div style={{textAlign:'left'}}>
-          <div className="input-group">
-            <label className="input-label">Supabase Project URL</label>
-            <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://xxxx.supabase.co" />
-          </div>
-          <div className="input-group">
-            <label className="input-label">Supabase Anon Key</label>
-            <input value={key} onChange={e=>setKey(e.target.value)} placeholder="eyJ..." type="password" />
-          </div>
-          <button className="btn btn-red" style={{width:'100%',justifyContent:'center',marginBottom:14}} onClick={connect}>
-            🔗 Connect & Launch
-          </button>
-          <button className="btn btn-outline" style={{width:'100%',justifyContent:'center',fontSize:12}} onClick={()=>setShowSql(!showSql)}>
-            {showSql ? '▲ Hide' : '▼ Show'} Database Setup SQL
-          </button>
-          {showSql && (
-            <div style={{marginTop:12,background:'var(--black)',borderRadius:8,padding:14,fontFamily:'monospace',fontSize:11,color:'#7dd3fc',whiteSpace:'pre-wrap',border:'1px solid var(--border)',overflowX:'auto'}}>
-              {SETUP_SQL}
+    <div className="login-screen">
+      <div className="login-left">
+        <div>
+          <div style={{marginBottom:48,display:'flex',alignItems:'center',gap:10}}>
+            <div style={{fontFamily:'var(--font-display)',fontSize:22,fontWeight:700,letterSpacing:1}}>
+              <span style={{color:'var(--red)'}}>TORQ</span>
+              <span style={{color:'#fff'}}>ONE.IN</span>
             </div>
-          )}
+            <div style={{background:'var(--red-glow)',border:'1px solid var(--border-active)',borderRadius:6,padding:'3px 10px',fontSize:9,fontWeight:700,color:'var(--red)',letterSpacing:2}}>ADMIN</div>
+          </div>
+          <div className="login-card">
+            <div className="login-card-header">
+              <div className="login-card-title">Welcome back</div>
+              <div className="login-card-subtitle">Sign in to access your admin panel</div>
+            </div>
+            {error && (
+              <div className="login-error">
+                <Icon name="alert" size={15} color="#ff4d5e" />
+                <span>{error}</span>
+              </div>
+            )}
+            <form onSubmit={handleLogin}>
+              <div className="input-group">
+                <label className="input-label">Username</label>
+                <input value={username} onChange={e=>setUsername(e.target.value)} placeholder="Enter your username" autoComplete="username" autoFocus />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Password</label>
+                <div className="password-field">
+                  <input type={showPw?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password" autoComplete="current-password" style={{paddingRight:44}} />
+                  <button type="button" className="password-toggle" onClick={()=>setShowPw(p=>!p)}>
+                    <Icon name={showPw?'eyeOff':'eye'} size={16} />
+                  </button>
+                </div>
+              </div>
+              <button className="btn btn-red login-btn" type="submit" disabled={loading}>
+                {loading ? <><span className="spinner"></span> Authenticating…</> : <><Icon name="login" size={15} /> Sign In</>}
+              </button>
+            </form>
+            <div className="login-footer">TORQONE.IN Admin Panel · Edappally, Kochi · © 2026</div>
+          </div>
         </div>
-        <div style={{marginTop:20,fontSize:11,color:'var(--text-dim)'}}>
-          Admin-only panel · TORQONE.IN © 2026
+      </div>
+      <div className="login-right">
+        <div className="login-brand">
+          <div className="login-brand-logo"><span className="r">TORQ</span><span className="w">ONE</span></div>
+          <div style={{fontFamily:'var(--font-display)',fontSize:18,color:'rgba(255,255,255,0.12)',letterSpacing:6,marginTop:4}}>· IN ·</div>
+          <div className="login-brand-sub">Automotive Performance Hub</div>
+          <div className="login-brand-tagline">
+            Performance parts, precision tracking,<br/>and seamless customer billing — all in one place.
+          </div>
+          <div className="login-brand-stats">
+            {[['360°','Dashboard'],['PDF','Invoices'],['WA','Sharing'],['P&L','Analytics']].map(([v,l])=>(
+              <div key={l} className="login-brand-stat">
+                <div className="login-brand-stat-val">{v}</div>
+                <div className="login-brand-stat-lbl">{l}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── BILL PREVIEW / GENERATOR ────────────────────────────────────────
+// ─── SETUP SCREEN ────────────────────────────────────────────
+function SetupScreen({ onConnect }) {
+  const [url, setUrl] = useState('');
+  const [key, setKey] = useState('');
+  const [showSql, setShowSql] = useState(false);
+  const connect = () => {
+    if (!url || !key) return;
+    localStorage.setItem('torqone_sb_url', url);
+    localStorage.setItem('torqone_sb_key', key);
+    onConnect(url, key);
+  };
+  return (
+    <div className="setup-screen fade-in">
+      <div className="setup-card">
+        <div style={{textAlign:'center',marginBottom:32}}>
+          <div className="setup-logo"><span>TORQ</span>ONE.IN</div>
+          <div style={{fontSize:10,color:'var(--text-muted)',letterSpacing:3,textTransform:'uppercase',marginTop:8}}>Database Setup</div>
+          <div style={{width:40,height:2,background:'var(--red)',margin:'20px auto 0',borderRadius:2}}></div>
+        </div>
+        <div className="input-group">
+          <label className="input-label">Supabase Project URL</label>
+          <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://xxxx.supabase.co" />
+        </div>
+        <div className="input-group">
+          <label className="input-label">Supabase Anon Key</label>
+          <input value={key} onChange={e=>setKey(e.target.value)} placeholder="eyJ..." type="password" />
+        </div>
+        <button className="btn btn-red" style={{width:'100%',justifyContent:'center',marginBottom:12,padding:'12px'}} onClick={connect}>
+          <Icon name="link" size={15} /> Connect Database
+        </button>
+        <button className="btn btn-outline" style={{width:'100%',justifyContent:'center',fontSize:12}} onClick={()=>setShowSql(!showSql)}>
+          <Icon name={showSql?'chevronUp':'chevronDown'} size={14} /> {showSql?'Hide':'Show'} Setup SQL
+        </button>
+        {showSql && <div className="code-block" style={{marginTop:14}}>{SETUP_SQL}</div>}
+        <div style={{marginTop:20,fontSize:11,color:'var(--text-muted)',textAlign:'center'}}>Admin-only panel · TORQONE.IN © 2026</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── BILL PREVIEW ────────────────────────────────────────────
 function BillPreview({ sale }) {
   const items = sale.items || [];
   return (
@@ -523,9 +662,10 @@ function BillPreview({ sale }) {
           <div className="bill-tag">AUTOMOTIVE PERFORMANCE HUB</div>
         </div>
         <div className="bill-info">
+          <div className="bill-info-title">INVOICE</div>
           <div>Edappally, Kochi, Kerala</div>
           <div>Mobile: 9037523225</div>
-          <div style={{marginTop:4,color:'#fff',fontWeight:700,fontSize:13}}>Invoice No: {sale.invoice_no}</div>
+          <div style={{marginTop:6,color:'#fff',fontWeight:700,fontSize:13}}>No: {sale.invoice_no}</div>
           <div>Date: {sale.invoice_date}</div>
         </div>
       </div>
@@ -534,28 +674,21 @@ function BillPreview({ sale }) {
           <div className="bill-meta-block">
             <div className="bill-meta-label">Bill To</div>
             <div className="bill-meta-val">{sale.customer_name}</div>
-            <div className="bill-meta-val small">{sale.customer_address || ''}</div>
-            <div className="bill-meta-val small">Mobile: {sale.customer_mobile || ''}</div>
+            <div className="bill-meta-val small">{sale.customer_address||''}</div>
+            <div className="bill-meta-val small">Mobile: {sale.customer_mobile||''}</div>
           </div>
           <div className="bill-meta-block">
             <div className="bill-meta-label">Vehicle</div>
-            <div className="bill-meta-val">{sale.vehicle_model || '—'} {sale.vehicle_year || ''}</div>
-            <div className="bill-meta-label" style={{marginTop:10}}>Payment</div>
+            <div className="bill-meta-val">{sale.vehicle_model||'—'} {sale.vehicle_year||''}</div>
+            <div className="bill-meta-label" style={{marginTop:10}}>Payment Mode</div>
             <div className="bill-meta-val small">{sale.payment_mode}</div>
           </div>
         </div>
         <table className="bill-table">
-          <colgroup>
-            <col className="col-no" />
-            <col className="col-desc" />
-            <col className="col-qty" />
-            <col className="col-rate" />
-            <col className="col-amt" />
-          </colgroup>
           <thead>
             <tr>
               <th className="col-no">#</th>
-              <th className="col-desc">Part Description</th>
+              <th>Part Description</th>
               <th className="col-qty" style={{textAlign:'center'}}>Qty</th>
               <th className="col-rate" style={{textAlign:'right'}}>Rate (₹)</th>
               <th className="col-amt" style={{textAlign:'right'}}>Amount (₹)</th>
@@ -564,8 +697,8 @@ function BillPreview({ sale }) {
           <tbody>
             {items.map((item, i) => (
               <tr key={i}>
-                <td className="col-no" style={{textAlign:'center',color:'#666'}}>{i+1}</td>
-                <td className="col-desc">{item.description}</td>
+                <td className="col-no" style={{textAlign:'center',color:'#999'}}>{i+1}</td>
+                <td>{item.description}</td>
                 <td className="col-qty" style={{textAlign:'center'}}>{item.qty} {item.unit}</td>
                 <td className="col-rate" style={{textAlign:'right'}}>₹{Number(item.rate).toLocaleString('en-IN')}</td>
                 <td className="col-amt" style={{textAlign:'right'}}>₹{Number(item.amount).toLocaleString('en-IN')}</td>
@@ -578,7 +711,7 @@ function BillPreview({ sale }) {
             <table className="bill-total-table">
               <tbody>
                 <tr><td>Subtotal</td><td>₹{Number(sale.subtotal).toLocaleString('en-IN')}</td></tr>
-                <tr><td>GST</td><td>NIL</td></tr>
+                <tr><td>GST</td><td style={{color:'#888'}}>NIL</td></tr>
               </tbody>
               <tfoot>
                 <tr className="bill-grand">
@@ -591,250 +724,203 @@ function BillPreview({ sale }) {
         </div>
       </div>
       <div className="bill-decl">
-        <strong>Declaration:</strong> Goods sold without GST. This invoice is issued by a Non-GST automotive spare parts seller.
+        <strong>Declaration:</strong> This invoice is issued by a Non-GST automotive spare parts seller. Goods sold without GST.
       </div>
       <div className="bill-sig">
-        <div>Authorized Signature</div>
-        <div style={{marginTop:6,fontWeight:700}}>For TORQONE.IN</div>
-        <div style={{fontSize:11,color:'#888'}}>Automotive Spare Parts Store</div>
+        <div style={{marginBottom:40,color:'#ccc',fontSize:10}}>Authorized Signatory</div>
+        <div style={{fontWeight:700}}>For TORQONE.IN</div>
+        <div style={{fontSize:10,color:'#888',marginTop:3}}>Automotive Spare Parts Store · Edappally, Kochi</div>
       </div>
       <div className="bill-footer">
-        <span>torqone.in · 9037523225 · Edappally, Kochi</span>
-        <span>Thank you for your purchase! 🔧</span>
+        <span>torqone.in · 9037523225 · Edappally, Kochi, Kerala</span>
+        <span>Thank you for your purchase!</span>
       </div>
     </div>
   );
 }
 
-function generatePDF(sale) {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+// ─── PDF GENERATOR ───────────────────────────────────────────
+function getPdfDoc(sale) {
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
   const W = 210; let y = 0;
-
-  // Header bar
-  doc.setFillColor(10,10,10);
-  doc.rect(0, 0, W, 36, 'F');
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(22); doc.setTextColor(232,25,44); doc.text('TORQ', 14, 20);
+  doc.setFillColor(10,10,10); doc.rect(0,0,W,36,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(22);
+  doc.setTextColor(232,25,44); doc.text('TORQ', 14, 20);
   const tw = doc.getTextWidth('TORQ');
   doc.setTextColor(255,255,255); doc.text('ONE.IN', 14+tw, 20);
   doc.setFontSize(8); doc.setFont('helvetica','normal');
-  doc.setTextColor(170,170,170); doc.text('AUTOMOTIVE PERFORMANCE HUB', 14, 28);
-
-  // Invoice info right side
+  doc.setTextColor(150,150,150); doc.text('AUTOMOTIVE PERFORMANCE HUB', 14, 28);
   doc.setFontSize(9); doc.setTextColor(200,200,200);
   doc.text('Edappally, Kochi, Kerala | Mobile: 9037523225', W-14, 16, {align:'right'});
   doc.setTextColor(255,255,255); doc.setFont('helvetica','bold');
   doc.text(`Invoice No: ${sale.invoice_no}`, W-14, 22, {align:'right'});
   doc.setFont('helvetica','normal'); doc.setTextColor(200,200,200);
-  doc.text(`Invoice Date: ${sale.invoice_date}`, W-14, 28, {align:'right'});
-
+  doc.text(`Date: ${sale.invoice_date}`, W-14, 28, {align:'right'});
   y = 44;
-  // Bill To
-  doc.setTextColor(0,0,0); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.setTextColor(120,120,120); doc.text('BILL TO', 14, y);
-  y += 5;
+  doc.setTextColor(120,120,120); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('BILL TO', 14, y); y += 5;
   doc.setTextColor(0,0,0); doc.setFontSize(11); doc.setFont('helvetica','bold');
   doc.text(sale.customer_name, 14, y); y += 5;
   doc.setFontSize(9); doc.setFont('helvetica','normal');
   if(sale.customer_address) { doc.text(sale.customer_address, 14, y); y += 5; }
-  doc.text(`Mobile: ${sale.customer_mobile || '—'}`, 14, y);
-
-  // Vehicle
+  doc.text(`Mobile: ${sale.customer_mobile||'—'}`, 14, y);
   let vy = 49;
   doc.setFontSize(8); doc.setTextColor(120,120,120); doc.setFont('helvetica','bold');
   doc.text('VEHICLE', W/2, vy); vy+=5;
   doc.setFontSize(11); doc.setTextColor(0,0,0);
-  doc.text(`${sale.vehicle_model || '—'} ${sale.vehicle_year || ''}`, W/2, vy); vy+=5;
+  doc.text(`${sale.vehicle_model||'—'} ${sale.vehicle_year||''}`, W/2, vy); vy+=5;
   doc.setFontSize(8); doc.setTextColor(120,120,120); doc.text('PAYMENT', W/2, vy+2); vy+=7;
   doc.setFontSize(9); doc.setTextColor(0,0,0); doc.setFont('helvetica','normal');
   doc.text(sale.payment_mode, W/2, vy);
-
   y = 82;
-  // Table header
-  doc.setFillColor(10,10,10);
-  doc.rect(14, y-5, W-28, 8, 'F');
+  doc.setFillColor(10,10,10); doc.rect(14, y-5, W-28, 8, 'F');
   doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(255,255,255);
   doc.text('#', 17, y); doc.text('Part Description', 25, y);
   doc.text('Qty', 110, y); doc.text('Rate (₹)', 130, y); doc.text('Amount (₹)', W-14, y, {align:'right'});
-
   y += 4;
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(0,0,0);
-  (sale.items || []).forEach((item, i) => {
+  (sale.items||[]).forEach((item,i) => {
     y += 7;
-    if (i % 2 === 0) { doc.setFillColor(248,248,248); doc.rect(14, y-5, W-28, 7, 'F'); }
-    doc.text(String(i+1), 17, y);
-    doc.text(item.description, 25, y);
-    doc.text(`${item.qty} ${item.unit}`, 110, y);
-    doc.text(Number(item.rate).toLocaleString('en-IN'), 130, y);
-    doc.text(Number(item.amount).toLocaleString('en-IN'), W-14, y, {align:'right'});
+    if(i%2===0){ doc.setFillColor(248,248,248); doc.rect(14,y-5,W-28,7,'F'); }
+    doc.text(String(i+1),17,y);
+    doc.text(doc.splitTextToSize(item.description,80)[0],25,y);
+    doc.text(`${item.qty} ${item.unit}`,110,y);
+    doc.text(Number(item.rate).toLocaleString('en-IN'),130,y);
+    doc.text(Number(item.amount).toLocaleString('en-IN'),W-14,y,{align:'right'});
   });
-
   y += 12;
-  // Totals
-  const tx = W - 75;
-  doc.setDrawColor(220,220,220); doc.line(tx, y-2, W-14, y-2);
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  doc.text('Subtotal', tx, y); doc.text(`₹${Number(sale.subtotal).toLocaleString('en-IN')}`, W-14, y, {align:'right'});
-  y+=6; doc.text('GST', tx, y); doc.text('NIL', W-14, y, {align:'right'});
-  y+=2; doc.line(tx, y, W-14, y); y+=5;
-  doc.setFillColor(10,10,10); doc.rect(tx-2, y-5, W-14-tx+16, 9, 'F');
+  const tx = W-78;
+  doc.setDrawColor(220,220,220); doc.line(tx,y-2,W-14,y-2);
+  doc.setFontSize(9);
+  doc.text('Subtotal',tx,y); doc.text(`₹${Number(sale.subtotal).toLocaleString('en-IN')}`,W-14,y,{align:'right'});
+  y+=6; doc.text('GST',tx,y); doc.text('NIL',W-14,y,{align:'right'});
+  y+=3; doc.line(tx,y,W-14,y); y+=5;
+  doc.setFillColor(10,10,10); doc.rect(tx-2,y-5,W-14-tx+16,9,'F');
   doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-  doc.text('Grand Total', tx, y); doc.text(`₹${Number(sale.grand_total).toLocaleString('en-IN')}`, W-14, y, {align:'right'});
-
-  y += 14;
-  // Declaration
-  doc.setTextColor(0,0,0); doc.setFont('helvetica','normal'); doc.setFontSize(8);
-  doc.text('Declaration: Goods sold without GST. This invoice is issued by a Non-GST automotive spare parts seller.', 14, y);
-  y += 8; doc.text(`Payment Mode: ${sale.payment_mode}`, 14, y);
-
-  y += 14;
-  doc.text('Authorized Signature', W-14, y, {align:'right'});
-  y += 5; doc.setFont('helvetica','bold');
-  doc.text('For TORQONE.IN Automotive Spare Parts Store', W-14, y, {align:'right'});
-
-  // Footer
-  doc.setFillColor(232,25,44);
-  doc.rect(0, 287, W, 10, 'F');
+  doc.text('Grand Total',tx,y); doc.text(`₹${Number(sale.grand_total).toLocaleString('en-IN')}`,W-14,y,{align:'right'});
+  y+=14; doc.setTextColor(0,0,0); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  doc.text('Declaration: Goods sold without GST. Non-GST automotive spare parts seller.',14,y);
+  y+=8; doc.text(`Payment Mode: ${sale.payment_mode}`,14,y);
+  y+=16; doc.text('Authorized Signatory',W-14,y,{align:'right'});
+  y+=5; doc.setFont('helvetica','bold');
+  doc.text('For TORQONE.IN',W-14,y,{align:'right'});
+  y+=4; doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,120,120);
+  doc.text('Automotive Spare Parts Store, Edappally, Kochi',W-14,y,{align:'right'});
+  doc.setFillColor(232,25,44); doc.rect(0,287,W,10,'F');
   doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(255,255,255);
-  doc.text('torqone.in · 9037523225 · Edappally, Kochi', 14, 293);
-  doc.text('Thank you for your purchase!', W-14, 293, {align:'right'});
-
-  doc.save(`TORQONE_${sale.invoice_no.replace('/','_')}.pdf`);
+  doc.text('torqone.in · 9037523225 · Edappally, Kochi, Kerala',14,293);
+  doc.text('Thank you for your purchase!',W-14,293,{align:'right'});
+  return doc;
 }
 
-// ─── WHATSAPP SHARE ──────────────────────────────────────────────────
-function shareOnWhatsApp(sale, type = 'customer') {
-  const items = (sale.items || []);
-  const itemLines = items.map((it, i) =>
-    `  ${i+1}. ${it.description} — ${it.qty} ${it.unit} x Rs.${Number(it.rate).toLocaleString('en-IN')} = Rs.${Number(it.amount).toLocaleString('en-IN')}`
-  ).join('\n');
+function generatePDF(sale) {
+  getPdfDoc(sale).save(`TORQONE_INVOICE_${sale.invoice_no.replace('/','_')}.pdf`);
+}
 
-  let msg = '';
-  if (type === 'customer') {
-    msg = [
-      '*TORQONE.IN — Invoice*',
-      '————————————————————',
-      `Invoice No: *${sale.invoice_no}*`,
-      `Date: ${sale.invoice_date}`,
-      '',
-      `Customer: *${sale.customer_name}*`,
-      sale.customer_address ? `Address: ${sale.customer_address}` : '',
-      sale.vehicle_model ? `Vehicle: ${sale.vehicle_model} ${sale.vehicle_year || ''}` : '',
-      '',
-      '*Parts / Items:*',
-      itemLines,
-      '————————————————————',
-      `*Grand Total: Rs.${Number(sale.grand_total).toLocaleString('en-IN')}*`,
-      `Payment: ${sale.payment_mode}`,
-      '',
-      '_GST NIL — Non-GST Seller_',
-      '',
-      'Thank you for choosing TORQONE.IN!',
-      'Ph: 9037523225 | Edappally, Kochi',
-    ].filter(l => l !== null && l !== undefined).join('\n');
-  } else {
-    msg = [
-      '*TORQONE.IN — Parts Requirement*',
-      '————————————————————',
-      `Date: ${sale.invoice_date}`,
-      sale.vehicle_model ? `Vehicle: ${sale.vehicle_model} ${sale.vehicle_year || ''}` : '',
-      '',
-      '*Parts Needed:*',
-      items.map((it, i) => `  ${i+1}. ${it.description} — ${it.qty} ${it.unit}`).join('\n'),
-      '',
-      'Kindly confirm availability and price.',
-      '— TORQONE.IN | 9037523225',
-    ].filter(l => l !== null && l !== undefined).join('\n');
-  }
-
-  const rawPhone = type === 'customer' ? (sale.customer_mobile || '') : '';
+// ─── WHATSAPP ────────────────────────────────────────────────
+function shareOnWhatsApp(sale, type='customer') {
+  const doc = getPdfDoc(sale);
+  const pdfBlob = doc.output('blob');
+  
+  const rawPhone = type==='customer'?(sale.customer_mobile||''):'';
   const phone = rawPhone.replace(/\D/g,'').replace(/^0/,'91').replace(/^(?!91)/,'91');
-  const encoded = encodeURIComponent(msg);
-  const url = phone.length > 5 ? `https://wa.me/${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
-  window.open(url, '_blank');
+  const textMsg = type==='customer' 
+    ? 'Hello! Here is your invoice from TORQONE.IN. Thank you for your purchase!' 
+    : 'Hello, please find the list of required auto parts attached.';
+
+  // Attempt HTML5 Web Share API (Mobile Native Sharing)
+  if (navigator.canShare) {
+    const file = new File([pdfBlob], `TORQONE_INVOICE_${sale.invoice_no.replace('/','_')}.pdf`, { type: 'application/pdf' });
+    if (navigator.canShare({ files: [file] })) {
+      navigator.share({
+        files: [file],
+        title: 'Invoice',
+        text: textMsg
+      }).catch(e => console.log('Share failed or cancelled.', e));
+      return;
+    }
+  }
+  
+  // Fallback for Desktop/Non-Supported: Auto-download and open chat
+  doc.save(`TORQONE_INVOICE_${sale.invoice_no.replace('/','_')}.pdf`);
+  const url = phone.length>5 ? `https://wa.me/${phone}?text=${encodeURIComponent(textMsg + "\n\n(Please find the downloaded PDF invoice attached.)")}` : `https://wa.me/?text=${encodeURIComponent(textMsg)}`;
+  alert("The invoice PDF has been downloaded to your device!\n\nThe WhatsApp chat will now open independently. Please manually ATTACH the downloaded PDF file to send it to the customer.");
+  window.open(url,'_blank');
 }
 
-// ─── NEW SALE MODAL ──────────────────────────────────────────────────
-const defaultItem = () => ({ description: '', qty: 1, unit: 'Nos', rate: '', buying_rate: '', amount: 0, buying_amount: 0 });
+// ─── NEW SALE MODAL ──────────────────────────────────────────
+const defaultItem = () => ({ description:'', qty:1, unit:'Nos', rate:'', buying_rate:'', amount:0, buying_amount:0 });
 
 function NewSaleModal({ onClose, onSave, editSale }) {
   const [form, setForm] = useState(editSale || {
-    invoice_no: '', invoice_date: today(),
-    customer_name: '', customer_mobile: '', customer_address: '',
-    vehicle_model: '', vehicle_year: '',
-    lead_source: 'instagram',
-    dealer_name: '',
-    payment_mode: 'Cash',
-    notes: '',
-    items: [defaultItem()],
+    invoice_no:'', invoice_date:today(),
+    customer_name:'', customer_mobile:'', customer_address:'',
+    vehicle_model:'', vehicle_year:'',
+    lead_source:'instagram', dealer_name:'',
+    payment_mode:'Cash', notes:'',
+    items:[defaultItem()],
   });
   const [saving, setSaving] = useState(false);
+  useEffect(() => { if (!editSale) setForm(f=>({...f, invoice_no:genInvoiceNo()})); }, []);
 
-  useEffect(() => {
-    if (!editSale) {
-      setForm(f => ({ ...f, invoice_no: genInvoiceNo(Date.now()) }));
-    }
-  }, []);
-
-  const setField = (k, v) => setForm(f => ({ ...f, [k]: v }));
-
-  const setItem = (i, k, v) => {
+  const setField = (k,v) => setForm(f=>({...f,[k]:v}));
+  const setItem = (i,k,v) => {
     const items = [...form.items];
-    items[i] = { ...items[i], [k]: v };
-    // recalc amounts
-    const rate = parseFloat(k === 'rate' ? v : items[i].rate) || 0;
-    const buying_rate = parseFloat(k === 'buying_rate' ? v : items[i].buying_rate) || 0;
-    const qty = parseFloat(k === 'qty' ? v : items[i].qty) || 0;
-    items[i].amount = rate * qty;
-    items[i].buying_amount = buying_rate * qty;
-    setForm(f => ({ ...f, items }));
+    items[i] = {...items[i],[k]:v};
+    const rate = parseFloat(k==='rate'?v:items[i].rate)||0;
+    const buying_rate = parseFloat(k==='buying_rate'?v:items[i].buying_rate)||0;
+    const qty = parseFloat(k==='qty'?v:items[i].qty)||0;
+    items[i].amount = rate*qty; items[i].buying_amount = buying_rate*qty;
+    setForm(f=>({...f,items}));
   };
+  const addItem = () => setForm(f=>({...f,items:[...f.items,defaultItem()]}));
+  const removeItem = i => setForm(f=>({...f,items:f.items.filter((_,j)=>j!==i)}));
 
-  const addItem = () => setForm(f => ({ ...f, items: [...f.items, defaultItem()] }));
-  const removeItem = (i) => setForm(f => ({ ...f, items: f.items.filter((_,j) => j!==i) }));
-
-  const subtotal = form.items.reduce((a,i) => a + (parseFloat(i.amount)||0), 0);
-  const buying_total = form.items.reduce((a,i) => a + (parseFloat(i.buying_amount)||0), 0);
+  const subtotal = form.items.reduce((a,i)=>a+(parseFloat(i.amount)||0),0);
+  const buying_total = form.items.reduce((a,i)=>a+(parseFloat(i.buying_amount)||0),0);
   const profit = subtotal - buying_total;
 
   const handleSave = async () => {
-    if (!form.customer_name) return alert('Customer name required');
-    if (!form.items.length || !form.items[0].description) return alert('Add at least one item');
+    if (!form.customer_name.trim()) return alert('Customer name is required');
+    if (!form.items.length || !form.items[0].description.trim()) return alert('Add at least one item');
     setSaving(true);
-    await onSave({ ...form, subtotal, grand_total: subtotal, buying_total, profit });
+    await onSave({...form, subtotal, grand_total:subtotal, buying_total, profit});
     setSaving(false);
   };
 
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
       <div className="modal">
+        <div className="modal-handle"></div>
         <div className="modal-head">
-          <div className="modal-title">{editSale ? '✏️ Edit Sale' : '➕ New Sale'}</div>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <div className="modal-title">
+            <Icon name={editSale?'edit':'plus'} size={18} color="var(--red)" />
+            {editSale ? 'Edit Sale' : 'New Sale'}
+          </div>
+          <button className="close-btn" onClick={onClose}><Icon name="x" size={16} /></button>
         </div>
         <div className="modal-body">
-          {/* Invoice */}
-          <div className="form-grid">
-            <div className="input-group">
+          <div className="form-grid" style={{marginBottom:18}}>
+            <div className="input-group" style={{margin:0}}>
               <label className="input-label">Invoice No</label>
               <input value={form.invoice_no} onChange={e=>setField('invoice_no',e.target.value)} />
             </div>
-            <div className="input-group">
+            <div className="input-group" style={{margin:0}}>
               <label className="input-label">Invoice Date</label>
               <input type="date" value={form.invoice_date} onChange={e=>setField('invoice_date',e.target.value)} />
             </div>
           </div>
-          {/* Customer */}
-          <div style={{borderTop:'1px solid var(--border)',paddingTop:16,marginBottom:16}}>
-            <div style={{fontSize:11,color:'var(--red)',letterSpacing:1.5,textTransform:'uppercase',fontWeight:600,marginBottom:12}}>Customer Info</div>
+
+          <div className="form-section">
+            <div className="form-section-label"><Icon name="user" size={12} color="var(--red)" />Customer Info</div>
             <div className="form-grid">
               <div className="input-group">
                 <label className="input-label">Customer Name *</label>
                 <input value={form.customer_name} onChange={e=>setField('customer_name',e.target.value)} placeholder="Full name" />
               </div>
               <div className="input-group">
-                <label className="input-label">Mobile</label>
-                <input value={form.customer_mobile} onChange={e=>setField('customer_mobile',e.target.value)} placeholder="+91 ..." />
+                <label className="input-label">Mobile Number</label>
+                <input value={form.customer_mobile} onChange={e=>setField('customer_mobile',e.target.value)} placeholder="+91 9000..." type="tel" />
               </div>
               <div className="input-group form-full">
                 <label className="input-label">Address</label>
@@ -842,9 +928,9 @@ function NewSaleModal({ onClose, onSave, editSale }) {
               </div>
             </div>
           </div>
-          {/* Vehicle */}
-          <div style={{borderTop:'1px solid var(--border)',paddingTop:16,marginBottom:16}}>
-            <div style={{fontSize:11,color:'var(--red)',letterSpacing:1.5,textTransform:'uppercase',fontWeight:600,marginBottom:12}}>Vehicle & Lead</div>
+
+          <div className="form-section">
+            <div className="form-section-label"><Icon name="car" size={12} color="var(--red)" />Vehicle & Lead Source</div>
             <div className="form-grid">
               <div className="input-group">
                 <label className="input-label">Vehicle Model</label>
@@ -857,93 +943,93 @@ function NewSaleModal({ onClose, onSave, editSale }) {
               <div className="input-group">
                 <label className="input-label">Lead Source</label>
                 <select value={form.lead_source} onChange={e=>setField('lead_source',e.target.value)}>
-                  <option value="instagram">📷 Instagram</option>
-                  <option value="facebook">👍 Facebook</option>
-                  <option value="whatsapp">💬 WhatsApp</option>
-                  <option value="direct">🚗 Direct / Walk-in</option>
-                  <option value="referral">🤝 Referral</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="direct">Direct / Walk-in</option>
+                  <option value="referral">Referral</option>
                 </select>
               </div>
               <div className="input-group">
-                <label className="input-label">Dealer / Supplier Name</label>
+                <label className="input-label">Dealer / Supplier</label>
                 <input value={form.dealer_name} onChange={e=>setField('dealer_name',e.target.value)} placeholder="Wholesale dealer name" />
               </div>
             </div>
           </div>
-          {/* Items */}
-          <div style={{borderTop:'1px solid var(--border)',paddingTop:16,marginBottom:16}}>
-            <div style={{fontSize:11,color:'var(--red)',letterSpacing:1.5,textTransform:'uppercase',fontWeight:600,marginBottom:12}}>Parts / Items</div>
+
+          <div className="form-section">
+            <div className="form-section-label"><Icon name="wrench" size={12} color="var(--red)" />Parts / Items</div>
             <div className="items-table-wrap">
-            <table className="items-table">
-              <thead>
-                <tr>
-                  <th style={{width:'30%'}}>Description</th>
-                  <th style={{width:'8%'}}>Qty</th>
-                  <th style={{width:'10%'}}>Unit</th>
-                  <th style={{width:'14%'}}>Sell Rate (₹)</th>
-                  <th style={{width:'14%'}}>Buy Rate (₹)</th>
-                  <th style={{width:'12%'}}>Amount</th>
-                  <th style={{width:'12%'}}>Buy Amt</th>
-                  <th style={{width:'5%'}}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {form.items.map((item, i) => (
-                  <tr key={i}>
-                    <td><input value={item.description} onChange={e=>setItem(i,'description',e.target.value)} placeholder="Part name" /></td>
-                    <td><input type="number" value={item.qty} onChange={e=>setItem(i,'qty',e.target.value)} min="1" /></td>
-                    <td>
-                      <select value={item.unit} onChange={e=>setItem(i,'unit',e.target.value)}>
-                        <option>Nos</option><option>Set</option><option>Pcs</option><option>Pair</option><option>Ltr</option>
-                      </select>
-                    </td>
-                    <td><input type="number" value={item.rate} onChange={e=>setItem(i,'rate',e.target.value)} placeholder="0" /></td>
-                    <td><input type="number" value={item.buying_rate} onChange={e=>setItem(i,'buying_rate',e.target.value)} placeholder="0" /></td>
-                    <td style={{color:'var(--text-muted)',fontSize:12,paddingLeft:8}}>₹{(item.amount||0).toLocaleString('en-IN')}</td>
-                    <td style={{color:'var(--orange)',fontSize:12,paddingLeft:8}}>₹{(item.buying_amount||0).toLocaleString('en-IN')}</td>
-                    <td><button className="btn btn-ghost btn-sm btn-icon" onClick={()=>removeItem(i)} style={{color:'var(--red)'}}>✕</button></td>
+              <table className="items-table">
+                <thead>
+                  <tr>
+                    <th style={{width:'28%'}}>Description</th>
+                    <th style={{width:'8%'}}>Qty</th>
+                    <th style={{width:'10%'}}>Unit</th>
+                    <th style={{width:'13%'}}>Sell Rate ₹</th>
+                    <th style={{width:'13%'}}>Buy Rate ₹</th>
+                    <th style={{width:'11%'}}>Amount</th>
+                    <th style={{width:'11%'}}>Buy Amt</th>
+                    <th style={{width:'6%'}}></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {form.items.map((item,i)=>(
+                    <tr key={i}>
+                      <td><input value={item.description} onChange={e=>setItem(i,'description',e.target.value)} placeholder="Part name" /></td>
+                      <td><input type="number" value={item.qty} onChange={e=>setItem(i,'qty',e.target.value)} min="1" /></td>
+                      <td><select value={item.unit} onChange={e=>setItem(i,'unit',e.target.value)}><option>Nos</option><option>Set</option><option>Pcs</option><option>Pair</option><option>Ltr</option><option>Mtr</option></select></td>
+                      <td><input type="number" value={item.rate} onChange={e=>setItem(i,'rate',e.target.value)} placeholder="0" /></td>
+                      <td><input type="number" value={item.buying_rate} onChange={e=>setItem(i,'buying_rate',e.target.value)} placeholder="0" /></td>
+                      <td style={{fontSize:12,paddingLeft:8,color:'var(--text-secondary)',whiteSpace:'nowrap'}}>₹{(item.amount||0).toLocaleString('en-IN')}</td>
+                      <td style={{fontSize:12,paddingLeft:8,color:'var(--orange)',whiteSpace:'nowrap'}}>₹{(item.buying_amount||0).toLocaleString('en-IN')}</td>
+                      <td>
+                        <button className="btn btn-ghost btn-sm btn-icon" onClick={()=>removeItem(i)} style={{color:'var(--red)'}}>
+                          <Icon name="x" size={13} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div className="add-item-row">
-              <button className="btn btn-outline btn-sm" onClick={addItem}>+ Add Item</button>
+            <div style={{marginTop:12}}>
+              <button className="btn btn-outline btn-sm" onClick={addItem}><Icon name="plus" size={13} /> Add Item</button>
             </div>
-            {/* Totals */}
-            <div style={{marginTop:16,display:'flex',gap:16,justifyContent:'flex-end'}}>
-              <div style={{textAlign:'right'}}>
-                <div style={{fontSize:11,color:'var(--text-muted)',marginBottom:4}}>Subtotal (Sell)</div>
-                <div style={{fontSize:18,fontWeight:700,fontFamily:'var(--font-display)'}}>{fmt(subtotal)}</div>
-              </div>
-              <div style={{textAlign:'right'}}>
-                <div style={{fontSize:11,color:'var(--text-muted)',marginBottom:4}}>Buying Total</div>
-                <div style={{fontSize:18,fontWeight:700,fontFamily:'var(--font-display)',color:'var(--orange)'}}>{fmt(buying_total)}</div>
-              </div>
-              <div style={{textAlign:'right'}}>
-                <div style={{fontSize:11,color:'var(--text-muted)',marginBottom:4}}>Profit</div>
-                <div style={{fontSize:18,fontWeight:700,fontFamily:'var(--font-display)',color: profit >= 0 ? 'var(--green)' : 'var(--red)'}}>{fmt(profit)}</div>
-              </div>
+            <div style={{marginTop:20,display:'flex',gap:12,flexWrap:'wrap',justifyContent:'flex-end'}}>
+              {[
+                {label:'Subtotal (Sell)',value:fmt(subtotal),color:'var(--text)'},
+                {label:'Buying Total',value:fmt(buying_total),color:'var(--orange)'},
+                {label:'Net Profit',value:fmt(profit),color:profit>=0?'var(--green)':'var(--red)'},
+              ].map(({label,value,color})=>(
+                <div key={label} style={{background:'var(--surface2)',border:'1px solid var(--border)',borderRadius:'var(--radius-sm)',padding:'10px 16px',textAlign:'right',minWidth:120}}>
+                  <div style={{fontSize:10,color:'var(--text-muted)',fontWeight:600,textTransform:'uppercase',letterSpacing:0.8,marginBottom:4}}>{label}</div>
+                  <div style={{fontFamily:'var(--font-display)',fontSize:20,fontWeight:700,color}}>{value}</div>
+                </div>
+              ))}
             </div>
           </div>
-          {/* Payment */}
-          <div className="form-grid">
-            <div className="input-group">
-              <label className="input-label">Payment Mode</label>
-              <select value={form.payment_mode} onChange={e=>setField('payment_mode',e.target.value)}>
-                <option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Partial</option>
-              </select>
-            </div>
-            <div className="input-group">
-              <label className="input-label">Notes (internal)</label>
-              <input value={form.notes} onChange={e=>setField('notes',e.target.value)} placeholder="Optional internal note" />
+
+          <div className="form-section">
+            <div className="form-section-label"><Icon name="tag" size={12} color="var(--red)" />Payment & Notes</div>
+            <div className="form-grid">
+              <div className="input-group" style={{margin:0}}>
+                <label className="input-label">Payment Mode</label>
+                <select value={form.payment_mode} onChange={e=>setField('payment_mode',e.target.value)}>
+                  <option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Partial</option><option>Credit</option>
+                </select>
+              </div>
+              <div className="input-group" style={{margin:0}}>
+                <label className="input-label">Internal Notes</label>
+                <input value={form.notes} onChange={e=>setField('notes',e.target.value)} placeholder="Optional internal note" />
+              </div>
             </div>
           </div>
         </div>
         <div className="modal-foot">
           <button className="btn btn-outline" onClick={onClose}>Cancel</button>
-          <button className="btn btn-red" onClick={handleSave} disabled={saving}>
-            {saving ? <span className="spinner"></span> : '💾'} {editSale ? 'Update Sale' : 'Save Sale'}
+          <button className="btn btn-red" onClick={handleSave} disabled={saving} style={{minWidth:140,justifyContent:'center'}}>
+            {saving ? <><span className="spinner"></span> Saving…</> : <><Icon name="save" size={14} /> {editSale?'Update Sale':'Save Sale'}</>}
           </button>
         </div>
       </div>
@@ -951,29 +1037,33 @@ function NewSaleModal({ onClose, onSave, editSale }) {
   );
 }
 
-// ─── BILL MODAL ──────────────────────────────────────────────────────
+// ─── BILL MODAL ──────────────────────────────────────────────
 function BillModal({ sale, onClose }) {
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal" style={{maxWidth:700}}>
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal" style={{maxWidth:720}}>
         <div className="modal-handle"></div>
         <div className="modal-head">
-          <div className="modal-title">🧾 Invoice</div>
+          <div className="modal-title">
+            <Icon name="invoice" size={18} color="var(--red)" /> Invoice — {sale.invoice_no}
+          </div>
           <div style={{display:'flex',gap:8,alignItems:'center'}}>
-            <button className="btn btn-red btn-sm" onClick={() => generatePDF(sale)}>⬇️ PDF</button>
-            <button className="close-btn" onClick={onClose}>✕</button>
+            <button className="btn btn-red btn-sm" onClick={()=>generatePDF(sale)}>
+              <Icon name="download" size={13} /> Download PDF
+            </button>
+            <button className="close-btn" onClick={onClose}><Icon name="x" size={16} /></button>
           </div>
         </div>
         <div className="wa-bar">
-          <span className="wa-bar-label">📲 Share via WhatsApp</span>
-          <button className="btn wa-btn-customer" onClick={() => shareOnWhatsApp(sale, 'customer')}>
-            💬 Send Bill to Customer
+          <span className="wa-bar-label"><Icon name="message" size={14} color="#4ade80" /> WhatsApp Share</span>
+          <button className="btn wa-btn-customer" style={{cursor:'pointer'}} onClick={()=>shareOnWhatsApp(sale,'customer')}>
+            <Icon name="message" size={15} /> Send Bill to Customer
           </button>
-          <button className="btn wa-btn-dealer" onClick={() => shareOnWhatsApp(sale, 'dealer')}>
-            🔧 Send to Dealer
+          <button className="btn wa-btn-dealer" style={{cursor:'pointer'}} onClick={()=>shareOnWhatsApp(sale,'dealer')}>
+            <Icon name="wrench" size={14} /> Send to Dealer
           </button>
         </div>
-        <div className="modal-body" style={{padding:14}}>
+        <div className="modal-body" style={{padding:16}}>
           <BillPreview sale={sale} />
         </div>
       </div>
@@ -981,65 +1071,73 @@ function BillModal({ sale, onClose }) {
   );
 }
 
-// ─── DASHBOARD ───────────────────────────────────────────────────────
+// ─── DASHBOARD ───────────────────────────────────────────────
 function Dashboard({ sales }) {
-  const totalRevenue = sales.reduce((a,s) => a + (s.grand_total||0), 0);
-  const totalProfit = sales.reduce((a,s) => a + (s.profit||0), 0);
-  const totalCost = sales.reduce((a,s) => a + (s.buying_total||0), 0);
+  const totalRevenue = sales.reduce((a,s)=>a+(s.grand_total||0),0);
+  const totalProfit = sales.reduce((a,s)=>a+(s.profit||0),0);
   const thisMonth = new Date().toISOString().slice(0,7);
-  const monthSales = sales.filter(s => s.invoice_date?.slice(0,7) === thisMonth);
-  const monthRevenue = monthSales.reduce((a,s) => a + (s.grand_total||0), 0);
-
+  const monthSales = sales.filter(s=>s.invoice_date?.slice(0,7)===thisMonth);
+  const monthRevenue = monthSales.reduce((a,s)=>a+(s.grand_total||0),0);
   const sourceCount = {};
-  sales.forEach(s => { sourceCount[s.lead_source] = (sourceCount[s.lead_source]||0)+1; });
+  sales.forEach(s=>{ sourceCount[s.lead_source]=(sourceCount[s.lead_source]||0)+1; });
   const topSource = Object.entries(sourceCount).sort((a,b)=>b[1]-a[1])[0];
-
-  const recent = [...sales].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0,5);
+  const recent = [...sales].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
+  const margin = totalRevenue>0 ? ((totalProfit/totalRevenue)*100).toFixed(1) : 0;
 
   return (
-    <div>
+    <div className="fade-in">
       <div className="stats-grid">
         <div className="stat-card accent">
+          <div className="stat-card-icon red-icon"><Icon name="rupee" size={18} /></div>
           <div className="stat-label">Total Revenue</div>
           <div className="stat-value">{fmt(totalRevenue)}</div>
-          <div className="stat-sub">{sales.length} total sales</div>
+          <div className="stat-sub">{sales.length} total sales recorded</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Total Profit</div>
-          <div className={`stat-value ${totalProfit >= 0 ? 'green' : 'red'}`}>{fmt(totalProfit)}</div>
-          <div className="stat-sub">After buying cost</div>
+          <div className="stat-card-icon green-icon"><Icon name="trending" size={18} /></div>
+          <div className="stat-label">Net Profit</div>
+          <div className={`stat-value ${totalProfit>=0?'green':'red'}`}>{fmt(totalProfit)}</div>
+          <div className="stat-sub">Margin: {margin}%</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">This Month Revenue</div>
+          <div className="stat-card-icon orange-icon"><Icon name="calendar" size={18} /></div>
+          <div className="stat-label">This Month</div>
           <div className="stat-value orange">{fmt(monthRevenue)}</div>
           <div className="stat-sub">{monthSales.length} sales this month</div>
         </div>
         <div className="stat-card">
+          <div className="stat-card-icon blue-icon"><Icon name="zap" size={18} /></div>
           <div className="stat-label">Top Lead Source</div>
-          <div className="stat-value" style={{fontSize:20,paddingTop:6}}>{topSource ? sourceLabel(topSource[0]) : '—'}</div>
-          <div className="stat-sub">{topSource ? `${topSource[1]} sales` : 'No data yet'}</div>
+          <div className="stat-value" style={{fontSize:18,paddingTop:4,display:'flex',alignItems:'center',gap:8}}>
+            {topSource ? <><Icon name={sourceIcon(topSource[0])} size={20} />{sourceLabel(topSource[0])}</> : '—'}
+          </div>
+          <div className="stat-sub">{topSource ? `${topSource[1]} leads` : 'No data yet'}</div>
         </div>
       </div>
+
       <div className="table-card">
         <div className="table-header">
           <div className="table-title">Recent Sales</div>
+          <div style={{fontSize:12,color:'var(--text-muted)'}}>Last 5 transactions</div>
         </div>
-        {recent.length === 0 ? (
-          <div className="empty-state"><div className="empty-icon">🚗</div><div className="empty-text">No sales yet. Add your first sale!</div></div>
+        {recent.length===0 ? (
+          <div className="empty-state">
+            <div className="empty-icon"><Icon name="car" size={48} /></div>
+            <div className="empty-text">No sales yet</div>
+            <div className="empty-sub">Add your first sale to get started</div>
+          </div>
         ) : (
           <table>
-            <thead><tr>
-              <th>Invoice</th><th>Customer</th><th>Vehicle</th><th>Source</th><th>Amount</th><th>Profit</th>
-            </tr></thead>
+            <thead><tr><th>Invoice</th><th>Customer</th><th>Vehicle</th><th>Source</th><th>Amount</th><th>Profit</th></tr></thead>
             <tbody>
-              {recent.map(s => (
+              {recent.map(s=>(
                 <tr key={s.id}>
-                  <td><span className="text-red fw-600">{s.invoice_no}</span><div className="fs-12 text-muted mt-4">{s.invoice_date}</div></td>
-                  <td><div className="fw-600">{s.customer_name}</div><div className="fs-12 text-muted">{s.customer_mobile}</div></td>
-                  <td>{s.vehicle_model || '—'}</td>
-                  <td><span className={`badge ${sourceBadge(s.lead_source)}`}>{sourceLabel(s.lead_source)}</span></td>
-                  <td className="fw-600">{fmt(s.grand_total)}</td>
-                  <td className={s.profit >= 0 ? 'text-green fw-600' : 'text-red fw-600'}>{fmt(s.profit)}</td>
+                  <td><div className="text-red fw-600 font-display" style={{fontSize:14}}>{s.invoice_no}</div><div className="fs-11 text-muted mt-4">{s.invoice_date}</div></td>
+                  <td><div className="fw-600">{s.customer_name}</div><div className="fs-11 text-muted">{s.customer_mobile}</div></td>
+                  <td className="text-secondary">{s.vehicle_model||'—'}</td>
+                  <td><span className={`badge ${sourceBadge(s.lead_source)}`}><Icon name={sourceIcon(s.lead_source)} size={10} />{sourceLabel(s.lead_source)}</span></td>
+                  <td className="fw-600 font-display" style={{fontSize:15}}>{fmt(s.grand_total)}</td>
+                  <td><span className={`profit-badge ${s.profit>=0?'up':'down'}`}><Icon name="trending" size={10} />{fmt(Math.abs(s.profit))}</span></td>
                 </tr>
               ))}
             </tbody>
@@ -1050,213 +1148,215 @@ function Dashboard({ sales }) {
   );
 }
 
-// ─── SALES LIST ──────────────────────────────────────────────────────
+// ─── SALES LIST ──────────────────────────────────────────────
 function SalesList({ sales, onNew, onEdit, onView, onDelete }) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
 
-  const filtered = sales.filter(s => {
+  const filtered = sales.filter(s=>{
     const q = search.toLowerCase();
-    const matchQ = !q || s.customer_name?.toLowerCase().includes(q) || s.invoice_no?.toLowerCase().includes(q) || s.vehicle_model?.toLowerCase().includes(q);
-    const matchF = filter === 'all' || s.lead_source === filter;
+    const matchQ = !q || s.customer_name?.toLowerCase().includes(q) || s.invoice_no?.toLowerCase().includes(q) || s.vehicle_model?.toLowerCase().includes(q) || s.customer_mobile?.includes(q);
+    const matchF = filter==='all'||s.lead_source===filter;
     return matchQ && matchF;
-  }).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  }).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
 
   return (
-    <div>
-      <div style={{display:'flex',gap:10,marginBottom:16,flexWrap:'wrap'}}>
+    <div className="fade-in">
+      <div style={{display:'flex',gap:10,marginBottom:18,flexWrap:'wrap'}}>
         <div className="search-bar" style={{flex:1,minWidth:180}}>
-          <span className="search-icon">🔍</span>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search customer, invoice, vehicle..." />
+          <span className="search-icon"><Icon name="search" size={15} /></span>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by customer, invoice, vehicle…" />
         </div>
-        <select value={filter} onChange={e=>setFilter(e.target.value)} style={{width:160,flex:'0 0 auto'}}>
+        <select value={filter} onChange={e=>setFilter(e.target.value)} style={{width:170,flex:'0 0 auto'}}>
           <option value="all">All Sources</option>
-          <option value="instagram">📷 Instagram</option>
-          <option value="facebook">👍 Facebook</option>
-          <option value="whatsapp">💬 WhatsApp</option>
-          <option value="direct">🚗 Direct</option>
-          <option value="referral">🤝 Referral</option>
+          <option value="instagram">Instagram</option>
+          <option value="facebook">Facebook</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="direct">Direct</option>
+          <option value="referral">Referral</option>
         </select>
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="empty-state"><div className="empty-icon">📋</div><div className="empty-text">No sales found</div></div>
-      ) : (
-        <>
-          {/* ── DESKTOP TABLE ── */}
-          <div className="table-card desktop-table">
-            <table>
-              <thead><tr>
-                <th>Invoice</th><th>Date</th><th>Customer</th><th>Vehicle</th><th>Source</th><th>Revenue</th><th>Profit</th><th>Actions</th>
-              </tr></thead>
-              <tbody>
-                {filtered.map(s => (
-                  <tr key={s.id}>
-                    <td><span className="text-red fw-600">{s.invoice_no}</span></td>
-                    <td className="text-muted" style={{whiteSpace:'nowrap'}}>{s.invoice_date}</td>
-                    <td><div className="fw-600">{s.customer_name}</div><div className="fs-12 text-muted">{s.customer_mobile}</div></td>
-                    <td style={{whiteSpace:'nowrap'}}>{s.vehicle_model || '—'} <span className="text-muted">{s.vehicle_year}</span></td>
-                    <td><span className={`badge ${sourceBadge(s.lead_source)}`}>{sourceLabel(s.lead_source)}</span></td>
-                    <td className="fw-600" style={{whiteSpace:'nowrap'}}>{fmt(s.grand_total)}</td>
-                    <td className={s.profit >= 0 ? 'text-green fw-600' : 'text-red fw-600'} style={{whiteSpace:'nowrap'}}>{fmt(s.profit)}</td>
-                    <td>
-                      <div style={{display:'flex',gap:4}}>
-                        <button className="btn btn-ghost btn-sm" title="View Bill" onClick={()=>onView(s)}>🧾</button>
-                        <button className="btn btn-ghost btn-sm" title="Download PDF" onClick={()=>generatePDF(s)}>⬇️</button>
-                        <button className="btn btn-ghost btn-sm" title="WhatsApp Customer" style={{color:'#25d366',borderColor:'#1a3326'}} onClick={()=>shareOnWhatsApp(s,'customer')}>💬</button>
-                        <button className="btn btn-ghost btn-sm" title="Edit" onClick={()=>onEdit(s)}>✏️</button>
-                        <button className="btn btn-ghost btn-sm" title="Delete" onClick={()=>onDelete(s)} style={{color:'var(--red)'}}>🗑</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* ── MOBILE CARDS ── */}
-          <div className="mobile-cards">
-            {filtered.map(s => (
-              <div className="sale-card" key={s.id}>
-                <div className="sale-card-top">
-                  <div>
-                    <div className="sale-card-invoice">{s.invoice_no}</div>
-                    <div className="sale-card-date">{s.invoice_date}</div>
-                  </div>
-                  <div style={{textAlign:'right'}}>
-                    <div className="sale-card-amount">{fmt(s.grand_total)}</div>
-                    <div className={`sale-card-profit ${s.profit >= 0 ? 'text-green' : 'text-red'}`}>
-                      {s.profit >= 0 ? '▲' : '▼'} {fmt(s.profit)}
+      {filtered.length===0 ? (
+        <div className="empty-state">
+          <div className="empty-icon"><Icon name="sales" size={52} /></div>
+          <div className="empty-text">No sales found</div>
+          <div className="empty-sub">Try adjusting your search or filter</div>
+        </div>
+      ) : <>
+        {/* Desktop Table */}
+        <div className="table-card desktop-table">
+          <table>
+            <thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Vehicle</th><th>Source</th><th>Revenue</th><th>Profit</th><th>Actions</th></tr></thead>
+            <tbody>
+              {filtered.map(s=>(
+                <tr key={s.id}>
+                  <td><div style={{fontFamily:'var(--font-display)',color:'var(--red)',fontWeight:700,fontSize:14}}>{s.invoice_no}</div></td>
+                  <td className="text-muted" style={{whiteSpace:'nowrap',fontSize:12}}>{s.invoice_date}</td>
+                  <td><div className="fw-600">{s.customer_name}</div><div className="fs-11 text-muted">{s.customer_mobile}</div></td>
+                  <td style={{whiteSpace:'nowrap',color:'var(--text-secondary)'}}>{s.vehicle_model||'—'} <span className="text-muted">{s.vehicle_year}</span></td>
+                  <td><span className={`badge ${sourceBadge(s.lead_source)}`}><Icon name={sourceIcon(s.lead_source)} size={10} />{sourceLabel(s.lead_source)}</span></td>
+                  <td className="fw-600 font-display" style={{whiteSpace:'nowrap',fontSize:15}}>{fmt(s.grand_total)}</td>
+                  <td><span className={`profit-badge ${s.profit>=0?'up':'down'}`}><Icon name="trending" size={10} />{fmt(Math.abs(s.profit))}</span></td>
+                  <td>
+                    <div className="invoice-action-bar">
+                      <button className="btn btn-ghost btn-sm btn-icon" title="View Invoice" onClick={()=>onView(s)}><Icon name="invoice" size={14} /></button>
+                      <button className="btn btn-ghost btn-sm btn-icon" title="Download PDF" onClick={()=>generatePDF(s)}><Icon name="download" size={14} /></button>
+                      <button className="btn btn-ghost btn-sm btn-icon" title="WhatsApp Customer" style={{color:'#25d366'}} onClick={()=>shareOnWhatsApp(s,'customer')}><Icon name="message" size={14} /></button>
+                      <button className="btn btn-ghost btn-sm btn-icon" title="Edit" onClick={()=>onEdit(s)}><Icon name="edit" size={14} /></button>
+                      <button className="btn btn-ghost btn-sm btn-icon" title="Delete" style={{color:'var(--red)'}} onClick={()=>onDelete(s)}><Icon name="trash" size={14} /></button>
                     </div>
-                  </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="mobile-cards">
+          {filtered.map(s=>(
+            <div className="sale-card" key={s.id}>
+              <div className="sale-card-top">
+                <div>
+                  <div className="sale-card-invoice">{s.invoice_no}</div>
+                  <div className="sale-card-date">{s.invoice_date}</div>
                 </div>
-                <div className="sale-card-mid">
-                  <div style={{flex:1}}>
-                    <div className="sale-card-customer">{s.customer_name}</div>
-                    <div className="sale-card-vehicle">{s.vehicle_model || ''} {s.vehicle_year || ''} · {s.customer_mobile || ''}</div>
-                  </div>
-                  <span className={`badge ${sourceBadge(s.lead_source)}`}>{sourceLabel(s.lead_source)}</span>
-                </div>
-                <div className="sale-card-actions">
-                  <button className="btn btn-ghost btn-sm" onClick={()=>onView(s)} style={{flex:1,justifyContent:'center'}}>🧾 Bill</button>
-                  <button
-                    className="btn btn-sm"
-                    style={{flex:2,justifyContent:'center',background:'#25d366',color:'#fff',fontWeight:700}}
-                    onClick={()=>shareOnWhatsApp(s,'customer')}
-                  >💬 WhatsApp</button>
-                  <button className="btn btn-ghost btn-sm" onClick={()=>onEdit(s)} style={{flex:1,justifyContent:'center'}}>✏️</button>
-                  <button className="btn btn-ghost btn-sm" onClick={()=>onDelete(s)} style={{flex:1,justifyContent:'center',color:'var(--red)'}}>🗑</button>
+                <div style={{textAlign:'right'}}>
+                  <div className="sale-card-amount font-display">{fmt(s.grand_total)}</div>
+                  <div className={`sale-card-profit ${s.profit>=0?'text-green':'text-red'}`}>{s.profit>=0?'▲':'▼'} {fmt(Math.abs(s.profit))}</div>
                 </div>
               </div>
-            ))}
-          </div>
-        </>
-      )}
+              <div className="sale-card-mid">
+                <div style={{flex:1}}>
+                  <div className="sale-card-customer">{s.customer_name}</div>
+                  <div className="sale-card-vehicle">{[s.vehicle_model,s.vehicle_year,s.customer_mobile].filter(Boolean).join(' · ')}</div>
+                </div>
+                <span className={`badge ${sourceBadge(s.lead_source)}`}><Icon name={sourceIcon(s.lead_source)} size={10} />{sourceLabel(s.lead_source)}</span>
+              </div>
+              <div className="sale-card-actions">
+                <button className="btn btn-ghost btn-sm" onClick={()=>onView(s)} style={{flex:1,justifyContent:'center'}}><Icon name="invoice" size={13} /></button>
+                <button className="btn btn-sm" style={{flex:2,justifyContent:'center',background:'linear-gradient(135deg,#25d366,#128c7e)',color:'#fff',fontWeight:700}} onClick={()=>shareOnWhatsApp(s,'customer')}><Icon name="message" size={13} /> WhatsApp</button>
+                <button className="btn btn-ghost btn-sm" onClick={()=>onEdit(s)} style={{flex:1,justifyContent:'center'}}><Icon name="edit" size={13} /></button>
+                <button className="btn btn-ghost btn-sm" onClick={()=>onDelete(s)} style={{flex:1,justifyContent:'center',color:'var(--red)'}}><Icon name="trash" size={13} /></button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>}
     </div>
   );
 }
 
-// ─── P&L ─────────────────────────────────────────────────────────────
+// ─── P&L ─────────────────────────────────────────────────────
 function ProfitLoss({ sales }) {
   const [period, setPeriod] = useState('all');
   const now = new Date();
   const thisMonth = now.toISOString().slice(0,7);
   const thisYear = String(now.getFullYear());
 
-  const filtered = sales.filter(s => {
-    if (period === 'all') return true;
-    if (period === 'month') return s.invoice_date?.slice(0,7) === thisMonth;
-    if (period === 'year') return s.invoice_date?.slice(0,4) === thisYear;
+  const filtered = sales.filter(s=>{
+    if(period==='all') return true;
+    if(period==='month') return s.invoice_date?.slice(0,7)===thisMonth;
+    if(period==='year') return s.invoice_date?.slice(0,4)===thisYear;
     return true;
   });
 
-  const revenue = filtered.reduce((a,s) => a+(s.grand_total||0), 0);
-  const cost = filtered.reduce((a,s) => a+(s.buying_total||0), 0);
+  const revenue = filtered.reduce((a,s)=>a+(s.grand_total||0),0);
+  const cost = filtered.reduce((a,s)=>a+(s.buying_total||0),0);
   const profit = revenue - cost;
-  const margin = revenue > 0 ? ((profit/revenue)*100).toFixed(1) : 0;
+  const margin = revenue>0 ? ((profit/revenue)*100).toFixed(1) : 0;
 
-  // Monthly breakdown
   const monthly = {};
-  sales.forEach(s => {
-    const m = s.invoice_date?.slice(0,7);
-    if (!m) return;
-    if (!monthly[m]) monthly[m] = { revenue:0, cost:0, profit:0, count:0 };
-    monthly[m].revenue += s.grand_total||0;
-    monthly[m].cost += s.buying_total||0;
-    monthly[m].profit += s.profit||0;
-    monthly[m].count++;
+  sales.forEach(s=>{
+    const m = s.invoice_date?.slice(0,7); if(!m) return;
+    if(!monthly[m]) monthly[m]={revenue:0,cost:0,profit:0,count:0};
+    monthly[m].revenue+=s.grand_total||0; monthly[m].cost+=s.buying_total||0;
+    monthly[m].profit+=s.profit||0; monthly[m].count++;
   });
-  const months = Object.entries(monthly).sort((a,b) => b[0].localeCompare(a[0])).slice(0,6);
+  const months = Object.entries(monthly).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,8);
 
-  // By source
   const bySrc = {};
-  filtered.forEach(s => {
-    if (!bySrc[s.lead_source]) bySrc[s.lead_source] = { revenue:0, profit:0, count:0 };
-    bySrc[s.lead_source].revenue += s.grand_total||0;
-    bySrc[s.lead_source].profit += s.profit||0;
+  filtered.forEach(s=>{
+    if(!bySrc[s.lead_source]) bySrc[s.lead_source]={revenue:0,profit:0,count:0};
+    bySrc[s.lead_source].revenue+=s.grand_total||0;
+    bySrc[s.lead_source].profit+=s.profit||0;
     bySrc[s.lead_source].count++;
   });
 
   return (
-    <div>
+    <div className="fade-in">
       <div className="tabs">
-        {[['all','All Time'],['month','This Month'],['year','This Year']].map(([v,l]) => (
+        {[['all','All Time'],['month','This Month'],['year','This Year']].map(([v,l])=>(
           <div key={v} className={`tab ${period===v?'active':''}`} onClick={()=>setPeriod(v)}>{l}</div>
         ))}
       </div>
       <div className="stats-grid">
         <div className="stat-card accent">
+          <div className="stat-card-icon red-icon"><Icon name="rupee" size={18} /></div>
           <div className="stat-label">Revenue</div>
           <div className="stat-value">{fmt(revenue)}</div>
-          <div className="stat-sub">{filtered.length} sales</div>
+          <div className="stat-sub">{filtered.length} transactions</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Total Cost (Buying)</div>
+          <div className="stat-card-icon orange-icon"><Icon name="barChart" size={18} /></div>
+          <div className="stat-label">Buying Cost</div>
           <div className="stat-value orange">{fmt(cost)}</div>
+          <div className="stat-sub">Total inventory cost</div>
         </div>
         <div className="stat-card">
+          <div className="stat-card-icon green-icon"><Icon name="trending" size={18} /></div>
           <div className="stat-label">Net Profit</div>
           <div className={`stat-value ${profit>=0?'green':'red'}`}>{fmt(profit)}</div>
+          <div className="stat-sub">After all costs</div>
         </div>
         <div className="stat-card">
+          <div className="stat-card-icon blue-icon"><Icon name="zap" size={18} /></div>
           <div className="stat-label">Profit Margin</div>
           <div className={`stat-value ${profit>=0?'green':'red'}`}>{margin}%</div>
+          <div className="stat-sub">Of total revenue</div>
         </div>
       </div>
 
       <div className="pl-grid">
         <div className="pl-card">
-          <div className="table-title" style={{marginBottom:14}}>📅 Monthly Breakdown</div>
+          <div style={{fontFamily:'var(--font-display)',fontSize:16,fontWeight:700,marginBottom:16,display:'flex',alignItems:'center',gap:8}}>
+            <Icon name="calendar" size={16} color="var(--red)" /> Monthly Breakdown
+          </div>
           <table>
             <thead><tr><th>Month</th><th>Sales</th><th>Revenue</th><th>Cost</th><th>Profit</th></tr></thead>
             <tbody>
-              {months.length === 0 ? <tr><td colSpan="5" style={{textAlign:'center',color:'var(--text-dim)',padding:20}}>No data</td></tr> :
-               months.map(([m, d]) => (
-                <tr key={m}>
-                  <td className="fw-600">{m}</td>
-                  <td>{d.count}</td>
-                  <td>{fmt(d.revenue)}</td>
-                  <td className="text-orange">{fmt(d.cost)}</td>
-                  <td className={d.profit>=0?'text-green fw-600':'text-red fw-600'}>{fmt(d.profit)}</td>
-                </tr>
-              ))}
+              {months.length===0
+                ? <tr><td colSpan="5" style={{textAlign:'center',padding:30,color:'var(--text-muted)'}}>No data available</td></tr>
+                : months.map(([m,d])=>(
+                  <tr key={m}>
+                    <td className="fw-600">{m}</td>
+                    <td>{d.count}</td>
+                    <td className="fw-600">{fmt(d.revenue)}</td>
+                    <td className="text-orange">{fmt(d.cost)}</td>
+                    <td><span className={`profit-badge ${d.profit>=0?'up':'down'}`}><Icon name="trending" size={10} />{fmt(Math.abs(d.profit))}</span></td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
         <div className="pl-card">
-          <div className="table-title" style={{marginBottom:14}}>📣 By Lead Source</div>
+          <div style={{fontFamily:'var(--font-display)',fontSize:16,fontWeight:700,marginBottom:16,display:'flex',alignItems:'center',gap:8}}>
+            <Icon name="zap" size={16} color="var(--red)" /> By Lead Source
+          </div>
           <table>
             <thead><tr><th>Source</th><th>Sales</th><th>Revenue</th><th>Profit</th></tr></thead>
             <tbody>
-              {Object.entries(bySrc).length === 0 ? <tr><td colSpan="4" style={{textAlign:'center',color:'var(--text-dim)',padding:20}}>No data</td></tr> :
-               Object.entries(bySrc).sort((a,b)=>b[1].revenue-a[1].revenue).map(([src, d]) => (
-                <tr key={src}>
-                  <td><span className={`badge ${sourceBadge(src)}`}>{sourceLabel(src)}</span></td>
-                  <td>{d.count}</td>
-                  <td>{fmt(d.revenue)}</td>
-                  <td className={d.profit>=0?'text-green fw-600':'text-red fw-600'}>{fmt(d.profit)}</td>
-                </tr>
-              ))}
+              {Object.entries(bySrc).length===0
+                ? <tr><td colSpan="4" style={{textAlign:'center',padding:30,color:'var(--text-muted)'}}>No data available</td></tr>
+                : Object.entries(bySrc).sort((a,b)=>b[1].revenue-a[1].revenue).map(([src,d])=>(
+                  <tr key={src}>
+                    <td><span className={`badge ${sourceBadge(src)}`}><Icon name={sourceIcon(src)} size={10} />{sourceLabel(src)}</span></td>
+                    <td>{d.count}</td>
+                    <td className="fw-600">{fmt(d.revenue)}</td>
+                    <td><span className={`profit-badge ${d.profit>=0?'up':'down'}`}><Icon name="trending" size={10} />{fmt(Math.abs(d.profit))}</span></td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
@@ -1265,83 +1365,97 @@ function ProfitLoss({ sales }) {
   );
 }
 
-// ─── CUSTOMER HISTORY ────────────────────────────────────────────────
+// ─── CUSTOMER HISTORY ────────────────────────────────────────
 function CustomerHistory({ sales, onView }) {
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(null);
 
   const customers = {};
-  sales.forEach(s => {
-    const k = s.customer_mobile || s.customer_name;
-    if (!customers[k]) customers[k] = { name: s.customer_name, mobile: s.customer_mobile, address: s.customer_address, sales: [] };
+  sales.forEach(s=>{
+    const k = s.customer_mobile||s.customer_name;
+    if(!customers[k]) customers[k]={name:s.customer_name,mobile:s.customer_mobile,address:s.customer_address,sales:[]};
     customers[k].sales.push(s);
   });
 
-  const list = Object.entries(customers).filter(([_, c]) => {
+  const list = Object.entries(customers).filter(([_,c])=>{
     const q = search.toLowerCase();
     return !q || c.name?.toLowerCase().includes(q) || c.mobile?.includes(q);
-  }).sort((a,b) => b[1].sales.length - a[1].sales.length);
+  }).sort((a,b)=>b[1].sales.length-a[1].sales.length);
 
   return (
-    <div>
+    <div className="fade-in">
       <div className="search-bar" style={{marginBottom:20}}>
-        <span className="search-icon">🔍</span>
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search customers..." />
+        <span className="search-icon"><Icon name="search" size={15} /></span>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search customers by name or mobile…" />
       </div>
-      {list.length === 0 ? (
-        <div className="empty-state"><div className="empty-icon">👥</div><div className="empty-text">No customers yet</div></div>
-      ) : list.map(([k, c]) => (
-        <div className="customer-card" key={k}>
-          <div className="customer-card-head" onClick={()=>setOpen(open===k?null:k)}>
-            <div>
-              <div className="customer-name">{c.name}</div>
-              <div className="customer-meta">{c.mobile} · {c.address} · {c.sales.length} order{c.sales.length!==1?'s':''} · Total: {fmt(c.sales.reduce((a,s)=>a+(s.grand_total||0),0))}</div>
+      {list.length===0
+        ? <div className="empty-state"><div className="empty-icon"><Icon name="users" size={52} /></div><div className="empty-text">No customers yet</div></div>
+        : list.map(([k,c])=>(
+          <div className="customer-card" key={k}>
+            <div className="customer-card-head" onClick={()=>setOpen(open===k?null:k)}>
+              <div>
+                <div className="customer-name">{c.name}</div>
+                <div className="customer-meta">{[c.mobile,c.address].filter(Boolean).join(' · ')} · {c.sales.length} order{c.sales.length!==1?'s':''} · {fmt(c.sales.reduce((a,s)=>a+(s.grand_total||0),0))} total</div>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:12}}>
+                <span style={{fontFamily:'var(--font-display)',fontSize:16,fontWeight:700}}>{fmt(c.sales.reduce((a,s)=>a+(s.grand_total||0),0))}</span>
+                <Icon name={open===k?'chevronUp':'chevronDown'} size={18} color="var(--text-muted)" />
+              </div>
             </div>
-            <span style={{color:'var(--text-muted)',fontSize:18}}>{open===k?'▲':'▼'}</span>
+            <div className={`customer-body ${open===k?'open':''}`}>
+              <table>
+                <thead><tr><th>Invoice</th><th>Date</th><th>Vehicle</th><th>Amount</th><th>Source</th><th></th></tr></thead>
+                <tbody>
+                  {c.sales.sort((a,b)=>new Date(b.invoice_date)-new Date(a.invoice_date)).map(s=>(
+                    <tr key={s.id}>
+                      <td style={{fontFamily:'var(--font-display)',color:'var(--red)',fontWeight:700}}>{s.invoice_no}</td>
+                      <td className="text-muted">{s.invoice_date}</td>
+                      <td>{s.vehicle_model||'—'}</td>
+                      <td className="fw-600">{fmt(s.grand_total)}</td>
+                      <td><span className={`badge ${sourceBadge(s.lead_source)}`}><Icon name={sourceIcon(s.lead_source)} size={10} />{sourceLabel(s.lead_source)}</span></td>
+                      <td><button className="btn btn-ghost btn-sm" onClick={()=>onView(s)} style={{display:'flex',alignItems:'center',gap:6}}><Icon name="invoice" size={13} /> View Bill</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className={`customer-body ${open===k?'open':''}`}>
-            <table>
-              <thead><tr><th>Invoice</th><th>Date</th><th>Vehicle</th><th>Amount</th><th>Source</th><th></th></tr></thead>
-              <tbody>
-                {c.sales.sort((a,b)=>new Date(b.invoice_date)-new Date(a.invoice_date)).map(s => (
-                  <tr key={s.id}>
-                    <td className="text-red fw-600">{s.invoice_no}</td>
-                    <td>{s.invoice_date}</td>
-                    <td>{s.vehicle_model||'—'}</td>
-                    <td className="fw-600">{fmt(s.grand_total)}</td>
-                    <td><span className={`badge ${sourceBadge(s.lead_source)}`}>{sourceLabel(s.lead_source)}</span></td>
-                    <td><button className="btn btn-ghost btn-sm" onClick={()=>onView(s)}>🧾 Bill</button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ))}
+        ))
+      }
     </div>
   );
 }
 
-// ─── MAIN APP ────────────────────────────────────────────────────────
+// ─── MAIN APP ────────────────────────────────────────────────
+const NAV = [
+  { id:'dashboard', icon:'dashboard', label:'Dashboard' },
+  { id:'sales',     icon:'sales',     label:'Sales' },
+  { id:'pl',        icon:'trending',  label:'P&L Report' },
+  { id:'customers', icon:'users',     label:'Customers' },
+];
+const PAGE_TITLE = { dashboard:'Dashboard', sales:'Sales', pl:'P&L Report', customers:'Customers' };
+
 function App() {
+  const [loggedIn, setLoggedIn] = useState(false);
   const [sb, setSb] = useState(null);
   const [page, setPage] = useState('dashboard');
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [modal, setModal] = useState(null); // null | 'new' | 'edit' | 'bill'
+  const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState(null);
 
-  // Check saved creds
+  useEffect(() => { if (sessionStorage.getItem('torqone_auth')==='1') setLoggedIn(true); }, []);
   useEffect(() => {
+    if (!loggedIn) return;
     const url = localStorage.getItem('torqone_sb_url');
     const key = localStorage.getItem('torqone_sb_key');
     if (url && key) initSupabase(url, key);
-  }, []);
+  }, [loggedIn]);
 
   const showToast = (msg, type='success') => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
+    setToast({msg,type});
+    setTimeout(()=>setToast(null), 3600);
   };
 
   const initSupabase = (url, key) => {
@@ -1349,20 +1463,16 @@ function App() {
       const client = createClient(url, key);
       setSb(client);
       loadSales(client);
-    } catch(e) {
-      showToast('Failed to connect to Supabase', 'error');
-    }
+    } catch(e) { showToast('Failed to connect to Supabase', 'error'); }
   };
 
   const loadSales = async (client) => {
     setLoading(true);
     try {
-      const { data, error } = await client.from('sales').select('*').order('created_at', { ascending: false });
+      const { data, error } = await client.from('sales').select('*').order('created_at',{ascending:false});
       if (error) throw error;
-      setSales(data || []);
-    } catch(e) {
-      showToast('Error loading sales: ' + e.message, 'error');
-    }
+      setSales(data||[]);
+    } catch(e) { showToast('Error loading: '+e.message, 'error'); }
     setLoading(false);
   };
 
@@ -1370,114 +1480,122 @@ function App() {
     if (!sb) return;
     try {
       if (selected?.id) {
-        const { error } = await sb.from('sales').update(form).eq('id', selected.id);
+        const { error } = await sb.from('sales').update(form).eq('id',selected.id);
         if (error) throw error;
-        setSales(s => s.map(x => x.id === selected.id ? { ...x, ...form } : x));
-        showToast('Sale updated ✅');
+        setSales(s=>s.map(x=>x.id===selected.id?{...x,...form}:x));
+        showToast('Sale updated successfully');
       } else {
         const { data, error } = await sb.from('sales').insert([form]).select();
         if (error) throw error;
-        setSales(s => [data[0], ...s]);
-        showToast('Sale saved ✅');
+        setSales(s=>[data[0],...s]);
+        showToast('Sale saved successfully');
       }
       setModal(null); setSelected(null);
-    } catch(e) {
-      showToast('Error: ' + e.message, 'error');
-    }
+    } catch(e) { showToast('Error: '+e.message, 'error'); }
   };
 
   const deleteSale = async (s) => {
     if (!window.confirm(`Delete invoice ${s.invoice_no}?`)) return;
     try {
-      const { error } = await sb.from('sales').delete().eq('id', s.id);
+      const { error } = await sb.from('sales').delete().eq('id',s.id);
       if (error) throw error;
-      setSales(prev => prev.filter(x => x.id !== s.id));
+      setSales(prev=>prev.filter(x=>x.id!==s.id));
       showToast('Sale deleted');
-    } catch(e) {
-      showToast('Error: ' + e.message, 'error');
-    }
+    } catch(e) { showToast('Error: '+e.message, 'error'); }
   };
 
+  const handleLogout = () => {
+    sessionStorage.removeItem('torqone_auth');
+    setLoggedIn(false); setSb(null); setSales([]);
+  };
+
+  if (!loggedIn) return <LoginScreen onLogin={()=>setLoggedIn(true)} />;
   if (!sb) return <SetupScreen onConnect={initSupabase} />;
-
-  const nav = [
-    { id: 'dashboard', icon: '📊', label: 'Dashboard' },
-    { id: 'sales', icon: '📋', label: 'Sales' },
-    { id: 'pl', icon: '📈', label: 'Profit & Loss' },
-    { id: 'customers', icon: '👥', label: 'Customers' },
-  ];
-
-  const pageTitle = { dashboard:'Dashboard', sales:'Sales', pl:'Profit & Loss', customers:'Customers' };
 
   return (
     <div className="app">
       {/* Desktop Sidebar */}
       <div className="sidebar">
         <div className="logo-area">
-          <div className="logo-text"><span>TORQ</span>ONE.IN</div>
+          <div className="logo-wordmark">
+            <span className="r">TORQ</span>
+            <span className="logo-dot"></span>
+            <span className="w">ONE</span>
+          </div>
           <div className="logo-sub">Admin Panel</div>
         </div>
         <nav className="nav">
-          {nav.map(n => (
+          <div className="nav-section-label">Main Menu</div>
+          {NAV.map(n=>(
             <div key={n.id} className={`nav-item ${page===n.id?'active':''}`} onClick={()=>setPage(n.id)}>
-              <span className="nav-icon">{n.icon}</span>
+              <Icon name={n.icon} size={16} />
               {n.label}
             </div>
           ))}
         </nav>
         <div className="sidebar-footer">
-          <div style={{marginBottom:4}}>🔗 Connected to Supabase</div>
-          <div style={{cursor:'pointer',color:'var(--red)'}} onClick={()=>{localStorage.clear();window.location.reload()}}>⏏ Disconnect</div>
+          <div className="sidebar-user">
+            <div className="sidebar-avatar"><Icon name="user" size={15} /></div>
+            <div className="sidebar-user-info">
+              <div className="sidebar-user-name">Admin</div>
+              <div className="sidebar-user-role">TORQONE.IN</div>
+            </div>
+            <div className="sidebar-conn-dot" title="Connected"></div>
+          </div>
+          <div className="sidebar-disconnect" onClick={handleLogout}>
+            <Icon name="logout" size={14} />
+            Sign Out
+          </div>
         </div>
       </div>
 
       {/* Main */}
       <div className="main">
         <div className="topbar">
-          <div className="page-title">{pageTitle[page]}</div>
+          <div className="topbar-left">
+            <div className="topbar-page-indicator">
+              <div className="topbar-page-icon">
+                <Icon name={NAV.find(n=>n.id===page)?.icon||'dashboard'} size={15} />
+              </div>
+              <div className="page-title">{PAGE_TITLE[page]}</div>
+            </div>
+          </div>
           <div className="topbar-right">
             {loading && <span className="spinner"></span>}
-            <button className="btn btn-red btn-sm" onClick={()=>{setSelected(null);setModal('new')}}>➕ New Sale</button>
-            <button className="btn btn-outline btn-sm" onClick={()=>loadSales(sb)}>↻</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>loadSales(sb)}>
+              <Icon name="refresh" size={13} /> Refresh
+            </button>
+            <button className="btn btn-red btn-sm" onClick={()=>{setSelected(null);setModal('new')}}>
+              <Icon name="plus" size={14} /> New Sale
+            </button>
           </div>
         </div>
+
         <div className="content">
-          {page === 'dashboard' && <Dashboard sales={sales} />}
-          {page === 'sales' && (
-            <SalesList
-              sales={sales}
-              onNew={()=>{setSelected(null);setModal('new')}}
-              onEdit={s=>{setSelected(s);setModal('edit')}}
-              onView={s=>{setSelected(s);setModal('bill')}}
-              onDelete={deleteSale}
-            />
-          )}
-          {page === 'pl' && <ProfitLoss sales={sales} />}
-          {page === 'customers' && <CustomerHistory sales={sales} onView={s=>{setSelected(s);setModal('bill')}} />}
+          {page==='dashboard' && <Dashboard sales={sales} />}
+          {page==='sales' && <SalesList sales={sales} onNew={()=>{setSelected(null);setModal('new')}} onEdit={s=>{setSelected(s);setModal('edit')}} onView={s=>{setSelected(s);setModal('bill')}} onDelete={deleteSale} />}
+          {page==='pl' && <ProfitLoss sales={sales} />}
+          {page==='customers' && <CustomerHistory sales={sales} onView={s=>{setSelected(s);setModal('bill')}} />}
         </div>
       </div>
 
       {/* Mobile Bottom Nav */}
       <div className="bottom-nav">
-        {nav.map(n => (
+        {NAV.map(n=>(
           <button key={n.id} className={`bottom-nav-item ${page===n.id?'active':''}`} onClick={()=>setPage(n.id)}>
-            <span className="bn-icon">{n.icon}</span>
-            <span>{n.label}</span>
+            <Icon name={n.icon} size={20} />
+            <span>{n.label.split(' ')[0]}</span>
           </button>
         ))}
         <div className="bottom-nav-fab" onClick={()=>{setSelected(null);setModal('new')}}>
-          <div className="fab-circle">➕</div>
+          <div className="fab-circle"><Icon name="plus" size={22} color="#fff" /></div>
           <span style={{fontSize:10,color:'var(--text-muted)'}}>New</span>
         </div>
       </div>
 
       {/* Modals */}
       {(modal==='new'||modal==='edit') && (
-        <NewSaleModal
-          editSale={modal==='edit' ? selected : null}
-          onClose={()=>{setModal(null);setSelected(null)}}
-          onSave={saveSale}
-        />
+        <NewSaleModal editSale={modal==='edit'?selected:null} onClose={()=>{setModal(null);setSelected(null)}} onSave={saveSale} />
       )}
       {modal==='bill' && selected && (
         <BillModal sale={selected} onClose={()=>{setModal(null);setSelected(null)}} />
